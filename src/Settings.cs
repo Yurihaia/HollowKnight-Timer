@@ -18,5 +18,11 @@ namespace FrameDisplay
             get => GetString("f11");
             set => SetString(value);
         }
+
+        public string SetGoal
+        {
+            get => GetString("f12");
+            set => SetString(value);
+        }
     }
 }

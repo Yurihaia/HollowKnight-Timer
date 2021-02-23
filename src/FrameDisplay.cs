@@ -11,6 +11,9 @@ namespace FrameDisplay
 
         internal static FrameDisplay Instance;
 
+        public FrameCount frameCount;
+        public TargetManager targetManager;
+
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public override void Initialize()
@@ -22,8 +25,10 @@ namespace FrameDisplay
             settings = GlobalSettings;
             Instance = this;
             GameObject obj = new GameObject();
-            FrameCount ct = obj.AddComponent<FrameCount>();
-            ct.ShowDisplay();
+            frameCount = obj.AddComponent<FrameCount>();
+            frameCount.ShowDisplay();
+            targetManager = obj.AddComponent<TargetManager>();
+            targetManager.Test();
             Object.DontDestroyOnLoad(obj);
         }
     }

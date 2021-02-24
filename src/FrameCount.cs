@@ -32,13 +32,14 @@ namespace HKTimer
                 new Vector2(0.7f, 0.1f),
                 new Vector2(0.7f, 0.1f)
             );
-            frameDisplay = CanvasUtil.CreateTextPanel(go, "0", 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
+            frameDisplay = CanvasUtil.CreateTextPanel(go, "0:00:000", 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
             debugPeepoHappy = CanvasUtil.CreateTextPanel(go, "0", 40, TextAnchor.LowerRight, endRd).GetComponent<Text>();
             UnityEngine.Object.DontDestroyOnLoad(go);
         }
 
         public void Update()
         {
+            var updateTimer = false;
             if (Input.GetKeyDown(HKTimer.instance.settings.pause))
             {
                 timerActive ^= true;
@@ -47,32 +48,32 @@ namespace HKTimer
             {
                 time = TimeSpan.Zero;
                 timerActive = false;
+                updateTimer = true;
             }
-            if (!TimerShouldBePaused() && timerActive)
+            if (timerActive && !TimerShouldBePaused())
             {
                 time += System.TimeSpan.FromSeconds(Time.unscaledDeltaTime);
+                if (Time.unscaledDeltaTime > 0) updateTimer = true;
             }
-            debugPeepoHappy.text = GameManager.instance.gameState.ToString();
-            frameDisplay.text = string.Format("{0}:{1:D2}.{2:D3}", Math.Floor(time.TotalMinutes), time.Seconds, time.Milliseconds);
+            if (updateTimer) frameDisplay.text = string.Format("{0}:{1:D2}.{2:D3}", Math.Floor(time.TotalMinutes), time.Seconds, time.Milliseconds);
         }
 
 
         // This uses the same disgusting logic as the autosplitter
         private bool lookForTeleporting;
-        private GameState lastGameState = GameState.MAIN_MENU;
+        private GameState lastGameState = GameState.INACTIVE;
+
+        private static FieldInfo cameraControlTeleporting = typeof(CameraController).GetField(
+            "teleporting",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
+        private static FieldInfo gameManagerDirtyTileMap = typeof(GameManager).GetField(
+            "tilemapDirty",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
+
         private bool TimerShouldBePaused()
         {
-            var cameraControlTeleporting = typeof(CameraController)
-                .GetField(
-                    "teleporting",
-                    BindingFlags.NonPublic | BindingFlags.Instance
-                );
-            var gameManagerDirtyTileMap = typeof(GameManager)
-                .GetField(
-                    "tilemapDirty",
-                    BindingFlags.NonPublic | BindingFlags.Instance
-                );
-
             var nextScene = GameManager.instance.nextSceneName;
             var sceneName = GameManager.instance.sceneName;
             var uiState = GameManager.instance.ui.uiState;

@@ -12,7 +12,7 @@ namespace HKTimer
 
         public void SpawnTriggers(string scene)
         {
-            if (start.scene.Equals(scene))
+            if (start?.scene != null && start.scene.Equals(scene))
             {
                 this.CreateTrigger(
                     new Vector3(start.x, start.y),
@@ -22,7 +22,7 @@ namespace HKTimer
                     Color.green
                 );
             }
-            if (end.scene.Equals(scene))
+            if (end?.scene != null && end.scene.Equals(scene))
             {
                 this.CreateTrigger(
                     new Vector3(end.x, end.y),

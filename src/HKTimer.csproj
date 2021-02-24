@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <ProjectGuid>{E3E4D0B7-656C-6C50-7567-696E2E57696E}</ProjectGuid>
+        <TargetFramework>net35</TargetFramework>
+        <AssemblyTitle>HKTimer</AssemblyTitle>
+        <AssemblyVersion>0.0.1</AssemblyVersion>
+        <Product>HKTimer</Product>
+        <DebugType>portable</DebugType>
+        <Copyright>Copyright © 2021</Copyright>
+        <OutputPath>bin\$(Configuration)\</OutputPath>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>D:\DepotDownloader\depots\367521\1221_modded\hollow_knight_Data\Managed\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>D:\DepotDownloader\depots\367521\1221_modded\hollow_knight_Data\Managed\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>D:\DepotDownloader\depots\367521\1221_modded\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Core" />
+    </ItemGroup>
+    <Target Name="CopyMod" AfterTargets="PostBuildEvent">
+        <Copy
+            SourceFiles="$(TargetPath)"
+            DestinationFolder="D:\\DepotDownloader\\depots\\367521\\1221_modded\\hollow_knight_Data\\Managed\\Mods\\"
+            SkipUnchangedFiles="false"
+        />
+    </Target>
+    <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+        <MakeDir Directories="$(ProjectDir)Output"/>
+        <Delete Files="$(ProjectDir)/HKTimer.zip"/>
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/"/>
+        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/"/>
+        <ZipDirectory DestinationFile="$(ProjectDir)/HKTimer.zip" SourceDirectory="$(ProjectDir)/Output"/>
+        <RemoveDir Directories="$(ProjectDir)Output"/>
+    </Target>
+</Project>

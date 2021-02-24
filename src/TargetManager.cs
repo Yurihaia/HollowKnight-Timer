@@ -1,53 +1,152 @@
 using System;
-using System.Runtime.CompilerServices;
-using Modding;
 using UnityEngine;
+using System.IO;
 
-namespace FrameDisplay
+namespace HKTimer
 {
     public class TargetManager : MonoBehaviour
     {
-        private GameObject start;
-        private GameObject end;
 
-        public void Test()
+        private PlayerPosTriggerSave start;
+        private PlayerPosTriggerSave end;
+
+        public void SpawnTriggers(string scene)
         {
-            Modding.Logger.Log("[FrameDisplay] create goal with " + FrameDisplay.Instance.settings.SetGoal);
+            if (start.scene.Equals(scene))
+            {
+                this.CreateTrigger(
+                    new Vector3(start.x, start.y),
+                    "hktimer/start",
+                    () => HKTimer.instance.frameCount.timerActive = true,
+                    () => { },
+                    Color.green
+                );
+            }
+            if (end.scene.Equals(scene))
+            {
+                this.CreateTrigger(
+                    new Vector3(end.x, end.y),
+                    "hktimer/end",
+                    () => HKTimer.instance.frameCount.timerActive = false,
+                    () => { },
+                    Color.red
+                );
+            }
+        }
+
+        public void Start()
+        {
+            Modding.Logger.Log("[HKTimer] Started target manager");
+            LoadTriggers();
         }
 
         public void Update()
         {
-            if (Input.GetKeyDown(FrameDisplay.Instance.settings.SetGoal))
+            // there was a log here
+            if (Input.GetKeyDown(HKTimer.instance.settings.set_start))
             {
-                if (this.end != null)
+                Modding.Logger.Log("[HKTimer] Created start at " + HeroController.instance.transform.position.ToString());
                 {
-                    GameObject.Destroy(this.end);
+                    var x = GameObject.Find("hktimer/start");
+                    if (x != null) GameObject.Destroy(x);
                 }
-                this.end = this.CreateTrigger(
+                this.CreateTrigger(
                     HeroController.instance.transform.position,
-                    "tp",
-                    () => FrameDisplay.Instance.frameCount.timerActive = false,
-                    () => {}
+                    "hktimer/start",
+                    () => HKTimer.instance.frameCount.timerActive = true,
+                    () => { },
+                    Color.green
                 );
-                Modding.Logger.Log("[FrameDisplay] Created goal at " + HeroController.instance.transform.position.ToString());
+                this.start = new PlayerPosTriggerSave()
+                {
+                    scene = GameManager.instance.sceneName,
+                    x = HeroController.instance.transform.position.x,
+                    y = HeroController.instance.transform.position.y,
+                };
             }
-            if (Input.GetKeyDown(FrameDisplay.Instance.settings.SetStart))
+            if (Input.GetKeyDown(HKTimer.instance.settings.set_end))
             {
-                if (this.start != null)
+                Modding.Logger.Log("[HKTimer] Created end at " + HeroController.instance.transform.position.ToString());
                 {
-                    GameObject.Destroy(this.start);
+                    var x = GameObject.Find("hktimer/end");
+                    if (x != null) GameObject.Destroy(x);
                 }
-                this.start = this.CreateTrigger(
+                this.CreateTrigger(
                     HeroController.instance.transform.position,
-                    "tp",
-                    () => FrameDisplay.Instance.frameCount.timerActive = true,
-                    () => {}
+                    "hktimer/end",
+                    () => HKTimer.instance.frameCount.timerActive = false,
+                    () => { },
+                    Color.red
                 );
-                Modding.Logger.Log("[FrameDisplay] Created start at " + HeroController.instance.transform.position.ToString());
+                this.end = new PlayerPosTriggerSave()
+                {
+                    scene = GameManager.instance.sceneName,
+                    x = HeroController.instance.transform.position.x,
+                    y = HeroController.instance.transform.position.y,
+                };
+            }
+            if (Input.GetKeyDown(HKTimer.instance.settings.load_triggers))
+            {
+                LoadTriggers();
+            }
+            if (Input.GetKeyDown(HKTimer.instance.settings.save_triggers))
+            {
+                SaveTriggers();
             }
         }
 
-        private GameObject CreateTrigger(Vector3 pos, string name, Action onEnter, Action onExit)
+        private void LoadTriggers()
+        {
+            {
+                var x = GameObject.Find("hktimer/start");
+                if (x != null) GameObject.Destroy(x);
+            }
+            {
+                var x = GameObject.Find("hktimer/end");
+                if (x != null) GameObject.Destroy(x);
+            }
+            var triggers = JsonUtility.FromJson<Triggers>(File.ReadAllText(
+                Application.persistentDataPath + "/hktimer_triggers.json"
+            ));
+            this.start = new PlayerPosTriggerSave()
+            {
+                scene = triggers.startScene,
+                x = triggers.startX,
+                y = triggers.startY,
+            };
+            this.end = new PlayerPosTriggerSave()
+            {
+                scene = triggers.endScene,
+                x = triggers.endX,
+                y = triggers.endY,
+
+            };
+            this.SpawnTriggers(GameManager.instance.sceneName);
+        }
+
+        private void SaveTriggers()
+        {
+            Modding.Logger.Log("[HKTimer] saving start " + start);
+            Modding.Logger.Log("[HKTimer] saving end " + end);
+            try
+            {
+                File.WriteAllText(
+                    Application.persistentDataPath + "/hktimer_triggers.json",
+                    JsonUtility.ToJson(new Triggers()
+                    {
+                        startScene = this.start.scene,
+                        startX = this.start.x,
+                        startY = this.start.y,
+                        endScene = this.end.scene,
+                        endX = this.end.x,
+                        endY = this.end.y,
+                    }, true)
+                );
+            }
+            catch (Exception) { }
+        }
+
+        private GameObject CreateTrigger(Vector3 pos, string name, Action onEnter, Action onExit, Color c)
         {
             GameObject gameObject = TargetManager.CreatePlane(new Vector3[]
             {
@@ -55,7 +154,7 @@ namespace FrameDisplay
                 new Vector3(pos.x - 0.1f, pos.y + 0.1f),
                 new Vector3(pos.x + 0.1f, pos.y - 0.1f),
                 new Vector3(pos.x + 0.1f, pos.y + 0.1f)
-            }, name, new Color?(Color.black));
+            }, name, c);
             TargetManager.PlayerPosTrigger playerPosTrigger = gameObject.AddComponent<TargetManager.PlayerPosTrigger>();
             playerPosTrigger.onEnter = onEnter;
             playerPosTrigger.onExit = onExit;
@@ -100,6 +199,14 @@ namespace FrameDisplay
             return mesh;
         }
 
+        [Serializable]
+        public class PlayerPosTriggerSave
+        {
+            public string scene;
+            public float x;
+            public float y;
+        }
+
         private class PlayerPosTrigger : MonoBehaviour
         {
             public Action onEnter;
@@ -107,13 +214,16 @@ namespace FrameDisplay
 
             private void OnTriggerEnter2D(Collider2D other)
             {
-                if(other.gameObject == HeroController.instance.gameObject) {
+                if (other.gameObject == HeroController.instance.gameObject)
+                {
                     onEnter();
                 }
             }
 
-            private void OnTriggerExit2D(Collider2D other) {
-                if(other.gameObject == HeroController.instance.gameObject) {
+            private void OnTriggerExit2D(Collider2D other)
+            {
+                if (other.gameObject == HeroController.instance.gameObject)
+                {
                     onExit();
                 }
             }

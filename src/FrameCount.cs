@@ -13,7 +13,6 @@ namespace HKTimer
         public bool timerActive = false;
 
         private Text frameDisplay;
-        private Text debugPeepoHappy;
 
         public void ShowDisplay()
         {
@@ -26,14 +25,14 @@ namespace HKTimer
                 new Vector2(0.15f, 0.1f),
                 new Vector2(0.15f, 0.1f)
             );
-            CanvasUtil.RectData endRd = new CanvasUtil.RectData(
-                new Vector2(800, 100),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0.7f, 0.1f),
-                new Vector2(0.7f, 0.1f)
-            );
+            // lower right corner text
+            // CanvasUtil.RectData endRd = new CanvasUtil.RectData(
+            //     new Vector2(800, 100),
+            //     new Vector2(0.5f, 0.5f),
+            //     new Vector2(0.7f, 0.1f),
+            //     new Vector2(0.7f, 0.1f)
+            // );
             frameDisplay = CanvasUtil.CreateTextPanel(go, "0:00:000", 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
-            debugPeepoHappy = CanvasUtil.CreateTextPanel(go, "0", 40, TextAnchor.LowerRight, endRd).GetComponent<Text>();
             UnityEngine.Object.DontDestroyOnLoad(go);
         }
 
@@ -74,10 +73,24 @@ namespace HKTimer
 
         private bool TimerShouldBePaused()
         {
+            if(GameManager.instance == null) {
+                // GameState is INACTIVE, so the teleporting code will run
+                // teleporting defaults to false
+                // (lookForTeleporting && (
+                //    teleporting || (gameState != GameState.PLAYING && gameState != GameState.ENTERING_LEVEL)
+                // ))
+                if(lookForTeleporting) {
+                    lookForTeleporting = false;
+                }
+                lastGameState = GameState.INACTIVE;
+                return false;
+            }
+
             var nextScene = GameManager.instance.nextSceneName;
             var sceneName = GameManager.instance.sceneName;
             var uiState = GameManager.instance.ui.uiState;
             var gameState = GameManager.instance.gameState;
+
             bool loadingMenu = (string.IsNullOrEmpty(nextScene) && sceneName != "Menu_Title") || (nextScene == "Menu_Title" && sceneName != "Menu_Title");
             if (gameState == GameState.PLAYING && lastGameState == GameState.MAIN_MENU)
             {

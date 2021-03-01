@@ -42,7 +42,6 @@ namespace HKTimer
 
         public void Update()
         {
-            // there was a log here
             if (Input.GetKeyDown(HKTimer.instance.settings.set_start))
             {
                 Modding.Logger.Log("[HKTimer] Created start at " + HeroController.instance.transform.position.ToString());

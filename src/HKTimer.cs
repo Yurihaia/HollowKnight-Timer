@@ -31,6 +31,7 @@ namespace HKTimer
             frameCount.ShowDisplay();
             obj.AddComponent<SettingsManager>();
             targetManager = obj.AddComponent<TargetManager>();
+            targetManager.ShowDisplay();
             USceneManager.activeSceneChanged += SceneChanged;
             Object.DontDestroyOnLoad(obj);
         }
@@ -48,6 +49,9 @@ namespace HKTimer
                 Modding.Logger.Log("[HKTimer] Reading settings from " + path);
                 this.settings = JsonUtility.FromJson<Settings>(File.ReadAllText(path));
             }
+            // Reload text positions
+            frameCount.ShowDisplay();
+            targetManager.ShowDisplay();
         }
 
         private static void SceneChanged(Scene from, Scene to)

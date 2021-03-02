@@ -1,36 +1,105 @@
 using System;
 using UnityEngine;
 using System.IO;
+using UnityEngine.UI;
+using Modding;
 
 namespace HKTimer
 {
     public class TargetManager : MonoBehaviour
     {
 
+        private TimeSpan pb;
         private PlayerPosTriggerSave start;
         private PlayerPosTriggerSave end;
 
+        private Text pbDisplay;
+        private GameObject pbDisplayObject;
+
+        public void ShowDisplay()
+        {
+            if(pbDisplayObject != null) {
+                GameObject.Destroy(pbDisplayObject);
+            }
+            Modding.Logger.Log("[HKTimer] Creating display");
+            pbDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
+            CanvasUtil.CreateFonts();
+            CanvasUtil.RectData timerRd = new CanvasUtil.RectData(
+                new Vector2(300, 75),
+                new Vector2(0.5f, 0.5f),
+                // offset x = 0.15f - 0.115f
+                // offset y = 0.1f - 0.05f
+                new Vector2(HKTimer.instance.settings.timerAnchorX - 0.035f, HKTimer.instance.settings.timerAnchorY - 0.05f),
+                new Vector2(HKTimer.instance.settings.timerAnchorX - 0.035f, HKTimer.instance.settings.timerAnchorY - 0.05f)
+            );
+            this.pb = TimeSpan.Zero;
+            pbDisplay = CanvasUtil.CreateTextPanel(pbDisplayObject, this.PbText(), 30, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
+            UnityEngine.Object.DontDestroyOnLoad(pbDisplayObject);
+        }
+
+        private string PbText() {
+            return string.Format(
+                "PB {0,3}:{1:D2}.{2:D3}",
+                Math.Floor(this.pb.TotalMinutes),
+                this.pb.Seconds,
+                this.pb.Milliseconds
+            );
+        }
+
+        private void CreateEnd(Vector3 pos)
+        {
+            {
+                var x = GameObject.Find("hktimer/end");
+                if (x != null) GameObject.Destroy(x);
+            }
+            this.CreateTrigger(
+                pos,
+                "hktimer/end",
+                () => {
+                    HKTimer.instance.frameCount.timerActive = false;
+                    var time = HKTimer.instance.frameCount.time;
+                    if(this.pb == null || this.pb == TimeSpan.Zero || this.pb > time) {
+                        this.pb = time;
+                        this.pbDisplay.text = this.PbText();
+                    }
+                },
+                () => { },
+                Color.red
+            );
+        }
+
+        private void CreateStart(Vector3 pos) {
+            {
+                var x = GameObject.Find("hktimer/start");
+                if (x != null) GameObject.Destroy(x);
+            }
+            this.CreateTrigger(
+                pos,
+                "hktimer/start",
+                () => HKTimer.instance.frameCount.timerActive = true,
+                () => { },
+                Color.green
+            );
+        }
+
         public void SpawnTriggers(string scene)
         {
+            
+            {
+                var x = GameObject.Find("hktimer/end");
+                if (x != null) GameObject.Destroy(x);
+            }
+            {
+                var x = GameObject.Find("hktimer/start");
+                if (x != null) GameObject.Destroy(x);
+            }
             if (start?.scene != null && start.scene.Equals(scene))
             {
-                this.CreateTrigger(
-                    new Vector3(start.x, start.y),
-                    "hktimer/start",
-                    () => HKTimer.instance.frameCount.timerActive = true,
-                    () => { },
-                    Color.green
-                );
+                CreateStart(new Vector3(start.x, start.y));
             }
             if (end?.scene != null && end.scene.Equals(scene))
             {
-                this.CreateTrigger(
-                    new Vector3(end.x, end.y),
-                    "hktimer/end",
-                    () => HKTimer.instance.frameCount.timerActive = false,
-                    () => { },
-                    Color.red
-                );
+                CreateEnd(new Vector3(end.x, end.y));
             }
         }
 
@@ -44,18 +113,7 @@ namespace HKTimer
         {
             if (Input.GetKeyDown(HKTimer.instance.settings.set_start))
             {
-                Modding.Logger.Log("[HKTimer] Created start at " + HeroController.instance.transform.position.ToString());
-                {
-                    var x = GameObject.Find("hktimer/start");
-                    if (x != null) GameObject.Destroy(x);
-                }
-                this.CreateTrigger(
-                    HeroController.instance.transform.position,
-                    "hktimer/start",
-                    () => HKTimer.instance.frameCount.timerActive = true,
-                    () => { },
-                    Color.green
-                );
+                CreateStart(HeroController.instance.transform.position);
                 this.start = new PlayerPosTriggerSave()
                 {
                     scene = GameManager.instance.sceneName,
@@ -65,18 +123,7 @@ namespace HKTimer
             }
             if (Input.GetKeyDown(HKTimer.instance.settings.set_end))
             {
-                Modding.Logger.Log("[HKTimer] Created end at " + HeroController.instance.transform.position.ToString());
-                {
-                    var x = GameObject.Find("hktimer/end");
-                    if (x != null) GameObject.Destroy(x);
-                }
-                this.CreateTrigger(
-                    HeroController.instance.transform.position,
-                    "hktimer/end",
-                    () => HKTimer.instance.frameCount.timerActive = false,
-                    () => { },
-                    Color.red
-                );
+                CreateEnd(HeroController.instance.transform.position);
                 this.end = new PlayerPosTriggerSave()
                 {
                     scene = GameManager.instance.sceneName,
@@ -96,14 +143,6 @@ namespace HKTimer
 
         private void LoadTriggers()
         {
-            {
-                var x = GameObject.Find("hktimer/start");
-                if (x != null) GameObject.Destroy(x);
-            }
-            {
-                var x = GameObject.Find("hktimer/end");
-                if (x != null) GameObject.Destroy(x);
-            }
             var triggers = JsonUtility.FromJson<Triggers>(File.ReadAllText(
                 Application.persistentDataPath + "/hktimer_triggers.json"
             ));
@@ -120,13 +159,13 @@ namespace HKTimer
                 y = triggers.endY,
 
             };
+            this.pb = new TimeSpan(triggers.pbTicks);
+            this.pbDisplay.text = this.PbText();
             this.SpawnTriggers(GameManager.instance.sceneName);
         }
 
         private void SaveTriggers()
         {
-            Modding.Logger.Log("[HKTimer] saving start " + start);
-            Modding.Logger.Log("[HKTimer] saving end " + end);
             try
             {
                 File.WriteAllText(
@@ -139,6 +178,7 @@ namespace HKTimer
                         endScene = this.end.scene,
                         endX = this.end.x,
                         endY = this.end.y,
+                        pbTicks = this.pb.Ticks,
                     }, true)
                 );
             }

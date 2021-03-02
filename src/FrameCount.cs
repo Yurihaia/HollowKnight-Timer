@@ -13,27 +13,32 @@ namespace HKTimer
         public bool timerActive = false;
 
         private Text frameDisplay;
+        private GameObject frameDisplayObject;
 
         public void ShowDisplay()
         {
-            Modding.Logger.Log("[HKTimer] Creating display");
-            GameObject go = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
+            if(frameDisplayObject != null) {
+                GameObject.Destroy(frameDisplayObject);
+            }
+            frameDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
             CanvasUtil.CreateFonts();
             CanvasUtil.RectData timerRd = new CanvasUtil.RectData(
                 new Vector2(400, 100),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(0.15f, 0.1f),
-                new Vector2(0.15f, 0.1f)
+                new Vector2(HKTimer.instance.settings.timerAnchorX, HKTimer.instance.settings.timerAnchorY),
+                new Vector2(HKTimer.instance.settings.timerAnchorX, HKTimer.instance.settings.timerAnchorY)
             );
-            // lower right corner text
-            // CanvasUtil.RectData endRd = new CanvasUtil.RectData(
-            //     new Vector2(800, 100),
-            //     new Vector2(0.5f, 0.5f),
-            //     new Vector2(0.7f, 0.1f),
-            //     new Vector2(0.7f, 0.1f)
-            // );
-            frameDisplay = CanvasUtil.CreateTextPanel(go, "0:00:000", 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
-            UnityEngine.Object.DontDestroyOnLoad(go);
+            frameDisplay = CanvasUtil.CreateTextPanel(frameDisplayObject, this.TimerText(), 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
+            UnityEngine.Object.DontDestroyOnLoad(frameDisplayObject);
+        }
+
+        private string TimerText() {
+            return string.Format(
+                "{0}:{1:D2}.{2:D3}",
+                Math.Floor(this.time.TotalMinutes),
+                this.time.Seconds,
+                this.time.Milliseconds
+            );
         }
 
         public void Update()
@@ -54,7 +59,7 @@ namespace HKTimer
                 time += System.TimeSpan.FromSeconds(Time.unscaledDeltaTime);
                 if (Time.unscaledDeltaTime > 0) updateTimer = true;
             }
-            if (updateTimer) frameDisplay.text = string.Format("{0}:{1:D2}.{2:D3}", Math.Floor(time.TotalMinutes), time.Seconds, time.Milliseconds);
+            if (updateTimer) frameDisplay.text = this.TimerText();
         }
 
 
@@ -73,15 +78,14 @@ namespace HKTimer
 
         private bool TimerShouldBePaused()
         {
-            if(GameManager.instance == null) {
+            if (GameManager.instance == null)
+            {
                 // GameState is INACTIVE, so the teleporting code will run
                 // teleporting defaults to false
                 // (lookForTeleporting && (
                 //    teleporting || (gameState != GameState.PLAYING && gameState != GameState.ENTERING_LEVEL)
                 // ))
-                if(lookForTeleporting) {
-                    lookForTeleporting = false;
-                }
+                lookForTeleporting = false;
                 lastGameState = GameState.INACTIVE;
                 return false;
             }
@@ -102,21 +106,60 @@ namespace HKTimer
                 lookForTeleporting = false;
             }
 
-            var shouldPause = (
-                gameState == GameState.PLAYING
-                && teleporting
-                && !GameManager.instance.hero_ctrl.cState.hazardRespawning
-            ) || lookForTeleporting
+            var shouldPause =
+                (
+                    gameState == GameState.PLAYING
+                    && teleporting
+                    && !(
+                        GameManager.instance.hero_ctrl == null ? false :
+                            GameManager.instance.hero_ctrl.cState.hazardRespawning
+                    )
+                )
+                || lookForTeleporting
                 || ((gameState == GameState.PLAYING || gameState == GameState.ENTERING_LEVEL) && uiState != UIState.PLAYING)
-                    || (gameState != GameState.PLAYING && !GameManager.instance.inputHandler.acceptingInput)
-                    || gameState == GameState.EXITING_LEVEL
-                    || gameState == GameState.LOADING
-                    || GameManager.instance.hero_ctrl.transitionState == HeroTransitionState.WAITING_TO_ENTER_LEVEL
-                    || (uiState != UIState.PLAYING
+                || (gameState != GameState.PLAYING && !GameManager.instance.inputHandler.acceptingInput)
+                || gameState == GameState.EXITING_LEVEL
+                || gameState == GameState.LOADING
+                || (
+                    GameManager.instance.hero_ctrl == null ? false :
+                    GameManager.instance.hero_ctrl.transitionState == HeroTransitionState.WAITING_TO_ENTER_LEVEL
+                )
+                || (
+                    uiState != UIState.PLAYING
+                    && (uiState != UIState.PAUSED || loadingMenu)
+                    && (!string.IsNullOrEmpty(nextScene) || sceneName == "_test_charms" || loadingMenu)
+                    && nextScene != sceneName
+                )
+                || (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance);
+            
+            if(Input.GetKeyDown("p")) {
+                Modding.Logger.Log(String.Format(
+                    "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
+                    (
+                        gameState == GameState.PLAYING
+                        && teleporting
+                        && !(
+                            GameManager.instance.hero_ctrl == null ? false :
+                                GameManager.instance.hero_ctrl.cState.hazardRespawning
+                        )
+                    )
+                    ,lookForTeleporting
+                    , ((gameState == GameState.PLAYING || gameState == GameState.ENTERING_LEVEL) && uiState != UIState.PLAYING)
+                    , (gameState != GameState.PLAYING && !GameManager.instance.inputHandler.acceptingInput)
+                    , gameState == GameState.EXITING_LEVEL
+                    , gameState == GameState.LOADING
+                    , GameManager.instance.hero_ctrl == null ? false :
+                        GameManager.instance.hero_ctrl.transitionState == HeroTransitionState.WAITING_TO_ENTER_LEVEL
+                    , (
+                        uiState != UIState.PLAYING
                         && (uiState != UIState.PAUSED || loadingMenu)
                         && (!string.IsNullOrEmpty(nextScene) || sceneName == "_test_charms" || loadingMenu)
-                        && nextScene != sceneName)
-                    || (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance);
+                        && nextScene != sceneName
+                    )
+                    , (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance)
+                ));
+                Modding.Logger.Log(shouldPause);
+            }
 
             lastGameState = gameState;
 

@@ -120,6 +120,8 @@ namespace HKTimer
                     x = HeroController.instance.transform.position.x,
                     y = HeroController.instance.transform.position.y,
                 };
+                this.pb = TimeSpan.Zero;
+                this.pbDisplay.text = this.PbText();
             }
             if (Input.GetKeyDown(HKTimer.instance.settings.set_end))
             {
@@ -130,6 +132,8 @@ namespace HKTimer
                     x = HeroController.instance.transform.position.x,
                     y = HeroController.instance.transform.position.y,
                 };
+                this.pb = TimeSpan.Zero;
+                this.pbDisplay.text = this.PbText();
             }
             if (Input.GetKeyDown(HKTimer.instance.settings.load_triggers))
             {

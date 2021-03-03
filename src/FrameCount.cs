@@ -134,35 +134,6 @@ namespace HKTimer
                 )
                 || (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance);
             
-            if(Input.GetKeyDown("p")) {
-                Modding.Logger.Log(String.Format(
-                    "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
-                    (
-                        gameState == GameState.PLAYING
-                        && teleporting
-                        && !(
-                            GameManager.instance.hero_ctrl == null ? false :
-                                GameManager.instance.hero_ctrl.cState.hazardRespawning
-                        )
-                    )
-                    ,lookForTeleporting
-                    , ((gameState == GameState.PLAYING || gameState == GameState.ENTERING_LEVEL) && uiState != UIState.PLAYING)
-                    , (gameState != GameState.PLAYING && !GameManager.instance.inputHandler.acceptingInput)
-                    , gameState == GameState.EXITING_LEVEL
-                    , gameState == GameState.LOADING
-                    , GameManager.instance.hero_ctrl == null ? false :
-                        GameManager.instance.hero_ctrl.transitionState == HeroTransitionState.WAITING_TO_ENTER_LEVEL
-                    , (
-                        uiState != UIState.PLAYING
-                        && (uiState != UIState.PAUSED || loadingMenu)
-                        && (!string.IsNullOrEmpty(nextScene) || sceneName == "_test_charms" || loadingMenu)
-                        && nextScene != sceneName
-                    )
-                    , (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance)
-                ));
-                Modding.Logger.Log(shouldPause);
-            }
-
             lastGameState = gameState;
 
             return shouldPause;

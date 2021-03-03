@@ -18,7 +18,7 @@ namespace HKTimer
         public void ShowDisplay()
         {
             if(frameDisplayObject != null) {
-                GameObject.Destroy(frameDisplayObject);
+                GameObject.DestroyImmediate(frameDisplayObject);
             }
             frameDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
             CanvasUtil.CreateFonts();
@@ -47,12 +47,14 @@ namespace HKTimer
             if (Input.GetKeyDown(HKTimer.instance.settings.pause))
             {
                 timerActive ^= true;
+                HKTimer.instance.targetManager.OnTimerPauseManual();
             }
             if (Input.GetKeyDown(HKTimer.instance.settings.reset))
             {
                 time = TimeSpan.Zero;
                 timerActive = false;
                 updateTimer = true;
+                HKTimer.instance.targetManager.OnTimerResetManual();
             }
             if (timerActive && !TimerShouldBePaused())
             {

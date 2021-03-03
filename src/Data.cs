@@ -13,18 +13,6 @@ namespace HKTimer
         public string load_triggers = "[9]";
         public string save_triggers = "[6]";
         public float timerAnchorX = 0.15f;
-        public float timerAnchorY = 0.1f;
-    }
-
-    [Serializable]
-    public class Triggers
-    {
-        public long pbTicks;
-        public string startScene;
-        public float startX;
-        public float startY;
-        public string endScene;
-        public float endX;
-        public float endY;
+        public float timerAnchorY = 0.2f;
     }
 }

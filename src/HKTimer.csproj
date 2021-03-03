@@ -3,7 +3,7 @@
         <ProjectGuid>{E3E4D0B7-656C-6C50-7567-696E2E57696E}</ProjectGuid>
         <TargetFramework>net35</TargetFramework>
         <AssemblyTitle>HKTimer</AssemblyTitle>
-        <AssemblyVersion>0.0.2</AssemblyVersion>
+        <AssemblyVersion>0.0.3</AssemblyVersion>
         <Product>HKTimer</Product>
         <DebugType>portable</DebugType>
         <Copyright>Copyright © 2021</Copyright>
@@ -21,20 +21,23 @@
             <HintPath>D:\DepotDownloader\depots\367521\1221_modded\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
         </Reference>
         <Reference Include="System.Core" />
+        <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\JsonNet\Newtonsoft.Json.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">
-        <Copy
-            SourceFiles="$(TargetPath)"
-            DestinationFolder="D:\\DepotDownloader\\depots\\367521\\1221_modded\\hollow_knight_Data\\Managed\\Mods\\"
-            SkipUnchangedFiles="false"
-        />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="D:\\DepotDownloader\\depots\\367521\\1221_modded\\hollow_knight_Data\\Managed\\Mods\\" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(SolutionDir)/JsonNet/Newtonsoft.Json.dll" DestinationFolder="D:\\DepotDownloader\\depots\\367521\\1221_modded\\hollow_knight_Data\\Managed\\Mods\\" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(SolutionDir)/JsonNet/System.Runtime.Serialization.dll" DestinationFolder="D:\\DepotDownloader\\depots\\367521\\1221_modded\\hollow_knight_Data\\Managed\\Mods\\" SkipUnchangedFiles="false" />
     </Target>
     <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
-        <MakeDir Directories="$(ProjectDir)Output"/>
-        <Delete Files="$(ProjectDir)/HKTimer.zip"/>
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/"/>
-        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/"/>
-        <ZipDirectory DestinationFile="$(ProjectDir)/HKTimer.zip" SourceDirectory="$(ProjectDir)/Output"/>
-        <RemoveDir Directories="$(ProjectDir)Output"/>
+        <MakeDir Directories="$(ProjectDir)Output" />
+        <Delete Files="$(ProjectDir)/HKTimer.zip" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy SourceFiles="$(SolutionDir)/JsonNet/Newtonsoft.Json.dll" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy SourceFiles="$(SolutionDir)/JsonNet/System.Runtime.Serialization.dll" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" />
+        <ZipDirectory DestinationFile="$(ProjectDir)/HKTimer.zip" SourceDirectory="$(ProjectDir)/Output" />
+        <RemoveDir Directories="$(ProjectDir)Output" />
     </Target>
 </Project>

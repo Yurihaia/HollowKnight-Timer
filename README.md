@@ -34,3 +34,6 @@ The timer also shows a personal best that is tied to a set of waypoints.
 These are saved in `hktimer_triggers.json` and measured in microseconds (1000 per millisecond).
 The PB is loaded when you load the triggers, so if you need to edit/reset it just edit the file.
 The PB will be wiped when you change the trigger positioning, and has to be saved using the save triggers button.
+
+### Manual Trigger File Editing
+TBD - Just look in the save file its fairly self explanatory

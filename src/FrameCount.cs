@@ -41,6 +41,11 @@ namespace HKTimer
             );
         }
 
+        public void OnDestroy()
+        {
+            GameObject.Destroy(frameDisplayObject);
+        }
+
         public void Update()
         {
             var updateTimer = false;

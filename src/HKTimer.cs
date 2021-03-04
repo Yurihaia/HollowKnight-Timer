@@ -7,13 +7,14 @@ using UnityEngine;
 
 namespace HKTimer
 {
-    public class HKTimer : Mod
+    public class HKTimer : Mod, ITogglableMod
     {
 
         public Settings settings = new Settings();
 
         internal static HKTimer instance;
 
+        public GameObject gameObject;
         public FrameCount frameCount;
         public TargetManager targetManager;
 
@@ -26,14 +27,20 @@ namespace HKTimer
                 return;
             }
             instance = this;
-            GameObject obj = new GameObject();
-            frameCount = obj.AddComponent<FrameCount>();
+            gameObject = new GameObject();
+            frameCount = gameObject.AddComponent<FrameCount>();
             frameCount.ShowDisplay();
-            obj.AddComponent<SettingsManager>();
-            targetManager = obj.AddComponent<TargetManager>();
+            gameObject.AddComponent<SettingsManager>();
+            targetManager = gameObject.AddComponent<TargetManager>();
             targetManager.ShowDisplay();
             USceneManager.activeSceneChanged += SceneChanged;
-            Object.DontDestroyOnLoad(obj);
+            Object.DontDestroyOnLoad(gameObject);
+        }
+
+        public void Unload()
+        {
+            GameObject.Destroy(gameObject);
+            USceneManager.activeSceneChanged -= SceneChanged;
         }
 
         public void ReloadSettings()

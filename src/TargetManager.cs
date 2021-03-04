@@ -38,6 +38,15 @@ namespace HKTimer
             pbDeltaDisplayObject.SetActive(false);
         }
 
+        public void OnDestroy()
+        {
+            this.start?.Destroy();
+            this.end?.Destroy();
+            this.triggers?.ForEach(x => x.Destroy());
+            GameObject.Destroy(pbDeltaDisplayObject);
+            GameObject.Destroy(pbDisplayObject);
+        }
+
         public void ShowDisplay()
         {
             if (pbDisplayObject != null)
@@ -48,7 +57,6 @@ namespace HKTimer
             {
                 GameObject.DestroyImmediate(pbDeltaDisplayObject);
             }
-            Modding.Logger.Log("[HKTimer] Creating display");
             pbDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
             pbDeltaDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
             CanvasUtil.CreateFonts();
@@ -83,9 +91,10 @@ namespace HKTimer
                 TextAnchor.LowerRight,
                 pbDeltaRd
             ).GetComponent<Text>();
-            pbDeltaDisplayObject.SetActive(false);
             UnityEngine.Object.DontDestroyOnLoad(pbDisplayObject);
             UnityEngine.Object.DontDestroyOnLoad(pbDeltaDisplayObject);
+            pbDeltaDisplayObject.SetActive(false);
+            Modding.Logger.Log("[HKTimer] Created display");
         }
 
         private string PbText()
@@ -130,6 +139,10 @@ namespace HKTimer
                     this.pbDelta = this.pb - time;
                     this.pbDeltaDisplay.text = this.PbDeltaText();
                     this.pbDeltaDisplayObject.SetActive(true);
+                    // fuck you unity :>
+                    // apparently setting an object to active
+                    // makes it need to have `DontDestroyOnLoad` called again
+                    UnityEngine.Object.DontDestroyOnLoad(pbDeltaDisplayObject);
                 }
                 else
                 {
@@ -147,12 +160,9 @@ namespace HKTimer
 
         public void SpawnTriggers(string scene)
         {
-            this.start.Spawn(scene, this);
-            this.end.Spawn(scene, this);
-            foreach (var x in this.triggers)
-            {
-                x.Spawn(scene, this);
-            }
+            this.start?.Spawn(scene, this);
+            this.end?.Spawn(scene, this);
+            this.triggers?.ForEach(x => x.Spawn(scene, this));
         }
 
         public void Start()

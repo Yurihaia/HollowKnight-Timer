@@ -222,6 +222,11 @@ namespace HKTimer
                     var triggers = JsonConvert.DeserializeObject<TriggerSaveFile>(File.ReadAllText(
                         Application.persistentDataPath + "/hktimer_triggers.json"
                     ));
+                    // Destroy all triggers
+                    this.triggers?.ForEach(x => x.Destroy());
+                    this.start?.Destroy();
+                    this.end?.Destroy();
+
                     this.triggers = triggers.other?.ConvertAll<Trigger>(x => x.ToTrigger())  ?? new List<Trigger>();
                     this.start = triggers.start.ToTrigger();
                     this.end = triggers.end.ToTrigger();
@@ -382,7 +387,7 @@ namespace HKTimer
         {
             if (this.scene == currentScene)
             {
-                if (this.go != null) this.Destroy();
+                this.Destroy();
                 Color color;
                 if(!ColorUtility.TryParseHtmlString(this.color, out color))
                 {
@@ -404,7 +409,7 @@ namespace HKTimer
 
         public override void Destroy()
         {
-            GameObject.Destroy(this.go);
+            if(this.go != null) GameObject.Destroy(this.go);
         }
 
         public static GameObject CreateTrigger(Vector2 start, Vector2 end, string name, Action onEnter, Action onExit, Color c)

@@ -14,5 +14,16 @@ namespace HKTimer
         public string save_triggers = "[6]";
         public float timerAnchorX = 0.15f;
         public float timerAnchorY = 0.2f;
+
+        public void LogBindErrors()
+        {
+            StringInputManager.LogBindErors(new string[] {
+                reload_settings,
+                set_start,
+                set_end,
+                load_triggers,
+                save_triggers
+            });
+        }
     }
 }

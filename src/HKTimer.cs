@@ -55,6 +55,7 @@ namespace HKTimer
             {
                 Modding.Logger.Log("[HKTimer] Reading settings from " + path);
                 this.settings = JsonUtility.FromJson<Settings>(File.ReadAllText(path));
+                this.settings.LogBindErrors();
             }
             // Reload text positions
             frameCount.ShowDisplay();
@@ -77,7 +78,7 @@ namespace HKTimer
 
         public void Update()
         {
-            if (Input.GetKeyDown(HKTimer.instance.settings.reload_settings))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.reload_settings))
             {
                 Modding.Logger.Log("[HKTimer] Reloading settings");
                 HKTimer.instance.ReloadSettings();

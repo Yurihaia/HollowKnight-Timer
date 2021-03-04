@@ -49,12 +49,12 @@ namespace HKTimer
         public void Update()
         {
             var updateTimer = false;
-            if (Input.GetKeyDown(HKTimer.instance.settings.pause))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.pause))
             {
                 timerActive ^= true;
                 HKTimer.instance.targetManager.OnTimerPauseManual();
             }
-            if (Input.GetKeyDown(HKTimer.instance.settings.reset))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.reset))
             {
                 time = TimeSpan.Zero;
                 timerActive = false;

@@ -172,7 +172,7 @@ namespace HKTimer
 
         public void Update()
         {
-            if (Input.GetKeyDown(HKTimer.instance.settings.set_start))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.set_start))
             {
                 this.start?.Destroy();
                 this.start = new CollisionTrigger()
@@ -187,7 +187,7 @@ namespace HKTimer
                 this.pb = TimeSpan.Zero;
                 this.pbDisplay.text = this.PbText();
             }
-            if (Input.GetKeyDown(HKTimer.instance.settings.set_end))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.set_end))
             {
                 this.end?.Destroy();
                 this.end = new CollisionTrigger()
@@ -202,11 +202,11 @@ namespace HKTimer
                 this.pb = TimeSpan.Zero;
                 this.pbDisplay.text = this.PbText();
             }
-            if (Input.GetKeyDown(HKTimer.instance.settings.load_triggers))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.load_triggers))
             {
                 LoadTriggers();
             }
-            if (Input.GetKeyDown(HKTimer.instance.settings.save_triggers))
+            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.save_triggers))
             {
                 SaveTriggers();
             }

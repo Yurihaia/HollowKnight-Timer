@@ -13,8 +13,9 @@ namespace HKTimer
     public class TargetManager : MonoBehaviour
     {
 
-        private TimeSpan pb;
+        private TimeSpan pb = TimeSpan.Zero;
         private TimeSpan pbDelta = TimeSpan.Zero;
+        private bool runningSegment = false;
 
         private List<Trigger> triggers = new List<Trigger>();
         // Special start and end triggers you can place
@@ -35,6 +36,7 @@ namespace HKTimer
 
         public void OnTimerResetManual()
         {
+            this.runningSegment = false;
             pbDeltaDisplayObject.SetActive(false);
         }
 
@@ -109,53 +111,50 @@ namespace HKTimer
 
         private string PbDeltaText()
         {
+            var dur = this.pbDelta.Duration();
             return string.Format(
-                "-{0}:{1:D2}.{2:D3}",
-                Math.Floor(this.pbDelta.TotalMinutes),
-                this.pbDelta.Seconds,
-                this.pbDelta.Milliseconds
+                "{0}{1}:{2:D2}.{3:D3}",
+                this.pbDelta < TimeSpan.Zero ? "-": "+",
+                Math.Floor(dur.TotalMinutes),
+                dur.Seconds,
+                dur.Milliseconds
             );
         }
 
-        public void TriggerStartHandling()
-        {
-            if(!HKTimer.instance.frameCount.timerActive) {
-                HKTimer.instance.frameCount.time = TimeSpan.Zero;
-                HKTimer.instance.frameCount.timerActive = true;
-            }
-        }
-
-        public void TriggerEndHandling()
+        public void UpdatePB()
         {
             var time = HKTimer.instance.frameCount.time;
-            if (HKTimer.instance.frameCount.timerActive && (
-                this.pb == null
-                || this.pb == TimeSpan.Zero
-                || this.pb > time
-            ))
+            if(HKTimer.instance.frameCount.timerActive)
             {
-                if (this.pb != TimeSpan.Zero)
+                if(this.pb == null || this.pb == TimeSpan.Zero) // No PB yet
                 {
-                    this.pbDelta = this.pb - time;
+                    this.pb = time;
+                    this.pbDisplay.text = this.PbText();
+                    this.pbDelta = TimeSpan.Zero;
+                    this.pbDeltaDisplayObject.SetActive(false);
+                }
+                else if(this.pb > time) // Beat PB
+                {
+                    this.pbDelta = time - this.pb;
+                    this.pb = time;
+                    this.pbDisplay.text = this.PbText();
                     this.pbDeltaDisplay.text = this.PbDeltaText();
                     this.pbDeltaDisplayObject.SetActive(true);
                     // fuck you unity :>
                     // apparently setting an object to active
                     // makes it need to have `DontDestroyOnLoad` called again
+                    // except apparently only on some versions???
+                    // idk man this worked so its gonna stay
                     UnityEngine.Object.DontDestroyOnLoad(pbDeltaDisplayObject);
                 }
-                else
+                else // Lost PB
                 {
-                    this.pbDeltaDisplayObject.SetActive(false);
+                    this.pbDelta = time - this.pb;
+                    this.pbDeltaDisplay.text = this.PbDeltaText();
+                    this.pbDeltaDisplayObject.SetActive(true);
+                    UnityEngine.Object.DontDestroyOnLoad(pbDeltaDisplayObject);
                 }
-                this.pb = time;
-                this.pbDisplay.text = this.PbText();
             }
-            else
-            {
-                this.pbDeltaDisplayObject.SetActive(false);
-            }
-            HKTimer.instance.frameCount.timerActive = false;
         }
 
         public void SpawnTriggers(string scene)
@@ -179,7 +178,8 @@ namespace HKTimer
                 this.start = new CollisionTrigger()
                 {
                     scene = GameManager.instance.sceneName,
-                    handling = TriggerHandling.START,
+                    logic = new JValue("segment_start"),
+                    color = "green",
                     start = HeroController.instance.transform.position - new Vector3(0.1f, 0.1f),
                     end = HeroController.instance.transform.position + new Vector3(0.1f, 0.1f),
                 };
@@ -193,7 +193,8 @@ namespace HKTimer
                 this.end = new CollisionTrigger()
                 {
                     scene = GameManager.instance.sceneName,
-                    handling = TriggerHandling.END,
+                    logic = new JValue("segment_end"),
+                    color = "red",
                     start = HeroController.instance.transform.position - new Vector3(0.1f, 0.1f),
                     end = HeroController.instance.transform.position + new Vector3(0.1f, 0.1f),
                 };
@@ -259,6 +260,58 @@ namespace HKTimer
             }
         }
 
+        public void TriggerLogic(JToken logic)
+        {
+            switch(logic) {
+                case JArray arr:
+                    // Array of logic items, handle each in order
+                    foreach(var c in arr) {
+                        this.TriggerLogic(c);
+                    }
+                    break;
+                case JValue val:
+                    // Specific logic preset
+                    if(val.Value is string s) {
+                        switch(s) {
+                            case "segment_start":
+                                if(!HKTimer.instance.frameCount.timerActive) {
+                                    this.runningSegment = true;
+                                    HKTimer.instance.frameCount.time = TimeSpan.Zero;
+                                    HKTimer.instance.frameCount.timerActive = true;
+                                }
+                                break;
+                            case "segment_end":
+                                if(this.runningSegment) {
+                                    this.UpdatePB();
+                                    HKTimer.instance.frameCount.timerActive = false;
+                                    this.runningSegment = false;
+                                }
+                                break;
+                            case "timer_reset":
+                                HKTimer.instance.frameCount.time = TimeSpan.Zero;
+                                break;
+                            case "timer_pause":
+                                HKTimer.instance.frameCount.timerActive = false;
+                                break;
+                            case "timer_resume":
+                                HKTimer.instance.frameCount.timerActive = true;
+                                break;
+                            case "timer_toggle":
+                                HKTimer.instance.frameCount.timerActive ^= true;
+                                break;
+                            default:
+                                Modding.Logger.LogError("[HKTimer] Invalid logic preset '" + s + "'");
+                                break;
+                        }
+                    } else {
+                        Modding.Logger.LogError("[HKTimer] Invalid logic `" + val.ToString() + "`");
+                    }
+                    break;
+                default:
+                    Modding.Logger.LogError("[HKTimer] Invalid logic `" + logic.ToString() + "`");
+                    break;
+            }
+        }
     }
 
     public class TriggerSaveFile
@@ -304,23 +357,14 @@ namespace HKTimer
         }
     }
 
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum TriggerHandling
-    {
-        START,
-        END,
-    }
-
-
     public abstract class Trigger
     {
-        public TriggerHandling handling;
+        public JToken logic;
         public string scene;
 
         public abstract void Spawn(string currentScene, TargetManager tm);
         public abstract void Destroy();
     }
-
 
     public class CollisionTrigger : Trigger
     {
@@ -328,6 +372,8 @@ namespace HKTimer
         public Vector2 start;
         [JsonConverter(typeof(JsonVec2Converter))]
         public Vector2 end;
+
+        public string color;
 
         [JsonIgnore]
         private GameObject go;
@@ -337,28 +383,22 @@ namespace HKTimer
             if (this.scene == currentScene)
             {
                 if (this.go != null) this.Destroy();
-                if (this.handling == TriggerHandling.START)
+                Color color;
+                if(!ColorUtility.TryParseHtmlString(this.color, out color))
                 {
-                    this.go = CreateTrigger(
-                        this.start,
-                        this.end,
-                        "hktimer/trigger/collision",
-                        tm.TriggerStartHandling,
-                        () => { },
-                        Color.green
-                    );
+                    Modding.Logger.LogError("Invalid color `" + color + "`.");
+                    color = Color.black;
                 }
-                else
-                {
-                    this.go = CreateTrigger(
-                        this.start,
-                        this.end,
-                        "hktimer/trigger/collision",
-                        tm.TriggerEndHandling,
-                        () => { },
-                        Color.red
-                    );
-                }
+                this.go = CreateTrigger(
+                    this.start,
+                    this.end,
+                    "hktimer/trigger/collision",
+                    () => {
+                        if(this.logic != null) tm.TriggerLogic(this.logic);
+                    },
+                    () => { },
+                    color
+                );
             }
         }
 

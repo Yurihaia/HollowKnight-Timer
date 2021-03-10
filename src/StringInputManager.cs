@@ -1,31 +1,21 @@
 using UnityEngine;
 
 namespace HKTimer {
-    public class StringInputManager
-    {
-        public static void LogBindErors(string[] keys)
-        {
-            foreach(var s in keys)
-            {
-                try
-                {
-                    if(s != null) Input.GetKeyDown(s);
-                }
-                catch
-                {
+    public class StringInputManager {
+        public static void LogBindErors(string[] keys) {
+            foreach (var s in keys) {
+                try {
+                    if (s != null) Input.GetKeyDown(s);
+                } catch {
                     Modding.Logger.LogError("Invalid key code '" + s + "'");
                 }
             }
         }
 
-        public static bool GetKeyDown(string key)
-        {
-            try
-            {
+        public static bool GetKeyDown(string key) {
+            try {
                 return key != null && Input.GetKeyDown(key);
-            }
-            catch
-            {
+            } catch {
                 return false;
             }
         }

@@ -5,81 +5,72 @@ using UnityEngine.SceneManagement;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
 
-namespace HKTimer
-{
-    public class HKTimer : Mod, ITogglableMod
-    {
+namespace HKTimer {
+    public class HKTimer : Mod, ITogglableMod {
 
-        public Settings settings = new Settings();
+        public static Settings settings { get; private set; } = new Settings();
 
-        internal static HKTimer instance;
+        public static HKTimer instance { get; private set; }
 
-        public GameObject gameObject;
-        public FrameCount frameCount;
-        public TargetManager targetManager;
+        public GameObject gameObject { get; private set; }
+        public Timer timer { get; private set; }
+        public TriggerManager triggerManager { get; private set; }
 
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        public override void Initialize()
-        {
-            if (instance != null)
-            {
+        public override void Initialize() {
+            if (instance != null) {
                 return;
             }
             instance = this;
             gameObject = new GameObject();
-            frameCount = gameObject.AddComponent<FrameCount>();
-            frameCount.ShowDisplay();
+
+            timer = gameObject.AddComponent<Timer>();
+            timer.ShowDisplay();
+
             gameObject.AddComponent<SettingsManager>();
-            targetManager = gameObject.AddComponent<TargetManager>();
-            targetManager.ShowDisplay();
+
+            triggerManager = gameObject.AddComponent<TriggerManager>().Initialize(timer);
+            triggerManager.ShowDisplay();
+
             USceneManager.activeSceneChanged += SceneChanged;
             Object.DontDestroyOnLoad(gameObject);
         }
 
-        public void Unload()
-        {
+        public void Unload() {
             GameObject.Destroy(gameObject);
             USceneManager.activeSceneChanged -= SceneChanged;
+            HKTimer.instance = null;
         }
 
-        public void ReloadSettings()
-        {
+        public void ReloadSettings() {
             string path = Application.persistentDataPath + "/hktimer.json";
-            if (!File.Exists(path))
-            {
+            if (!File.Exists(path)) {
                 Modding.Logger.Log("[HKTimer] Writing default settings to " + path);
-                File.WriteAllText(path, JsonUtility.ToJson(this.settings, true));
-            }
-            else
-            {
+                File.WriteAllText(path, JsonUtility.ToJson(settings, true));
+            } else {
                 Modding.Logger.Log("[HKTimer] Reading settings from " + path);
-                this.settings = JsonUtility.FromJson<Settings>(File.ReadAllText(path));
-                this.settings.LogBindErrors();
+                settings = JsonUtility.FromJson<Settings>(File.ReadAllText(path));
+                settings.LogBindErrors();
             }
             // Reload text positions
-            frameCount.ShowDisplay();
-            targetManager.ShowDisplay();
+            timer.ShowDisplay();
+            triggerManager.ShowDisplay();
         }
 
-        private static void SceneChanged(Scene from, Scene to)
-        {
-            HKTimer.instance.targetManager.SpawnTriggers(to.name);
+        private void SceneChanged(Scene from, Scene to) {
+            triggerManager.SpawnTriggers();
         }
     }
 
-    public class SettingsManager : MonoBehaviour
-    {
-        public void Start()
-        {
+    public class SettingsManager : MonoBehaviour {
+        public void Start() {
             Modding.Logger.Log("[HKTimer] Reloading settings");
             HKTimer.instance.ReloadSettings();
         }
 
-        public void Update()
-        {
-            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.reload_settings))
-            {
+        public void Update() {
+            if (StringInputManager.GetKeyDown(HKTimer.settings.reload_settings)) {
                 Modding.Logger.Log("[HKTimer] Reloading settings");
                 HKTimer.instance.ReloadSettings();
             }

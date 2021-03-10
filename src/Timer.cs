@@ -5,19 +5,16 @@ using GlobalEnums;
 using System;
 using System.Reflection;
 
-namespace HKTimer
-{
-    public class FrameCount : MonoBehaviour
-    {
-        public TimeSpan time = TimeSpan.Zero;
-        public bool timerActive = false;
+namespace HKTimer {
+    public class Timer : MonoBehaviour {
+        public TimeSpan time { get; set; } = TimeSpan.Zero;
+        public bool timerActive { get; set; } = false;
 
         private Text frameDisplay;
         private GameObject frameDisplayObject;
 
-        public void ShowDisplay()
-        {
-            if(frameDisplayObject != null) {
+        public void ShowDisplay() {
+            if (frameDisplayObject != null) {
                 GameObject.DestroyImmediate(frameDisplayObject);
             }
             frameDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
@@ -25,8 +22,8 @@ namespace HKTimer
             CanvasUtil.RectData timerRd = new CanvasUtil.RectData(
                 new Vector2(400, 100),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(HKTimer.instance.settings.timerAnchorX, HKTimer.instance.settings.timerAnchorY),
-                new Vector2(HKTimer.instance.settings.timerAnchorX, HKTimer.instance.settings.timerAnchorY)
+                new Vector2(HKTimer.settings.timerAnchorX, HKTimer.settings.timerAnchorY),
+                new Vector2(HKTimer.settings.timerAnchorX, HKTimer.settings.timerAnchorY)
             );
             frameDisplay = CanvasUtil.CreateTextPanel(frameDisplayObject, this.TimerText(), 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
             UnityEngine.Object.DontDestroyOnLoad(frameDisplayObject);
@@ -41,28 +38,26 @@ namespace HKTimer
             );
         }
 
-        public void OnDestroy()
-        {
+        public void OnDestroy() {
             GameObject.Destroy(frameDisplayObject);
         }
 
-        public void Update()
-        {
+        public event Action OnTimerPause;
+        public event Action OnTimerReset;
+
+        public void Update() {
             var updateTimer = false;
-            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.pause))
-            {
+            if (StringInputManager.GetKeyDown(HKTimer.settings.pause)) {
                 timerActive ^= true;
-                HKTimer.instance.targetManager.OnTimerPauseManual();
+                OnTimerPause?.Invoke();
             }
-            if (StringInputManager.GetKeyDown(HKTimer.instance.settings.reset))
-            {
+            if (StringInputManager.GetKeyDown(HKTimer.settings.reset)) {
                 time = TimeSpan.Zero;
                 timerActive = false;
                 updateTimer = true;
-                HKTimer.instance.targetManager.OnTimerResetManual();
+                OnTimerReset?.Invoke();
             }
-            if (timerActive && !TimerShouldBePaused())
-            {
+            if (timerActive && !TimerShouldBePaused()) {
                 time += System.TimeSpan.FromSeconds(Time.unscaledDeltaTime);
                 if (Time.unscaledDeltaTime > 0) updateTimer = true;
             }
@@ -83,10 +78,8 @@ namespace HKTimer
             BindingFlags.NonPublic | BindingFlags.Instance
         );
 
-        private bool TimerShouldBePaused()
-        {
-            if (GameManager.instance == null)
-            {
+        private bool TimerShouldBePaused() {
+            if (GameManager.instance == null) {
                 // GameState is INACTIVE, so the teleporting code will run
                 // teleporting defaults to false
                 // (lookForTeleporting && (
@@ -103,13 +96,11 @@ namespace HKTimer
             var gameState = GameManager.instance.gameState;
 
             bool loadingMenu = (string.IsNullOrEmpty(nextScene) && sceneName != "Menu_Title") || (nextScene == "Menu_Title" && sceneName != "Menu_Title");
-            if (gameState == GameState.PLAYING && lastGameState == GameState.MAIN_MENU)
-            {
+            if (gameState == GameState.PLAYING && lastGameState == GameState.MAIN_MENU) {
                 lookForTeleporting = true;
             }
             bool teleporting = (bool)cameraControlTeleporting.GetValue(GameManager.instance.cameraCtrl);
-            if (lookForTeleporting && (teleporting || (gameState != GameState.PLAYING && gameState != GameState.ENTERING_LEVEL)))
-            {
+            if (lookForTeleporting && (teleporting || (gameState != GameState.PLAYING && gameState != GameState.ENTERING_LEVEL))) {
                 lookForTeleporting = false;
             }
 
@@ -138,7 +129,7 @@ namespace HKTimer
                     && nextScene != sceneName
                 )
                 || (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance);
-            
+
             lastGameState = gameState;
 
             return shouldPause;

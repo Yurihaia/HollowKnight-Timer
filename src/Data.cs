@@ -1,10 +1,8 @@
 using System;
 
-namespace HKTimer
-{
+namespace HKTimer {
     [Serializable]
-    public class Settings
-    {
+    public class Settings {
         public string pause = "[1]";
         public string reset = "[0]";
         public string reload_settings = "[5]";
@@ -15,8 +13,7 @@ namespace HKTimer
         public float timerAnchorX = 0.15f;
         public float timerAnchorY = 0.2f;
 
-        public void LogBindErrors()
-        {
+        public void LogBindErrors() {
             StringInputManager.LogBindErors(new string[] {
                 reload_settings,
                 set_start,

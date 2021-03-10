@@ -317,9 +317,9 @@ namespace HKTimer {
         }
 
         private class LogicCommand {
-            public string command;
-            public JValue trigger;
-            public JObject data;
+            public string command = default;
+            public JValue trigger = default;
+            public JObject data = default;
         }
     }
 

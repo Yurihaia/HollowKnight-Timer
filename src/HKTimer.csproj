@@ -20,6 +20,9 @@
         <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>D:\DepotDownloader\depots\367521\1221_modded\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
         </Reference>
+        <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>D:\DepotDownloader\depots\367521\1221_modded\hollow_knight_Data\Managed\PlayMaker.dll</HintPath>
+        </Reference>
         <Reference Include="System.Core" />
         <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>..\JsonNet\Newtonsoft.Json.dll</HintPath>

@@ -1,6 +1,11 @@
 # HKTimer
 Hollow Knight in-game timer mod
 
+## Installation
+To install the mod, grab the release ZIP from [the latest release](https://github.com/Yurihaia/HollowKnight-Timer/releases).
+Extract all 3 `.dll` files into the `Mods` folder in your Hollow Knight installation.  
+The modding API will say that `System.Runtime.Serialization.dll` failed to load but this is completely normal
+
 ## Settings
 The keybinds and various other settings can be edited in the `hktimer.json` in the same directory as your save files. They follow the unity keybind naming system.  
 the defaults are

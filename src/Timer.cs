@@ -13,7 +13,7 @@ namespace HKTimer {
         private Text frameDisplay;
         private GameObject frameDisplayObject;
 
-        public void ShowDisplay() {
+        public void InitDisplay() {
             if (frameDisplayObject != null) {
                 GameObject.DestroyImmediate(frameDisplayObject);
             }
@@ -27,6 +27,11 @@ namespace HKTimer {
             );
             frameDisplay = CanvasUtil.CreateTextPanel(frameDisplayObject, this.TimerText(), 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
             UnityEngine.Object.DontDestroyOnLoad(frameDisplayObject);
+        }
+
+        public void ShowDisplay(bool show) {
+            this.frameDisplayObject.SetActive(show);
+            if(show) GameObject.DontDestroyOnLoad(this.frameDisplayObject);
         }
 
         private string TimerText() {

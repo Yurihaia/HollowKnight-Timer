@@ -15,26 +15,31 @@ namespace HKTimer {
         public GameObject gameObject { get; private set; }
         public Timer timer { get; private set; }
         public TriggerManager triggerManager { get; private set; }
+        // oh god oh fuck
+        public UI.UIManager ui { get; private set; }
 
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public override void Initialize() {
-            if (instance != null) {
+            if(instance != null) {
                 return;
             }
             instance = this;
             gameObject = new GameObject();
 
             timer = gameObject.AddComponent<Timer>();
-            timer.ShowDisplay();
-
-            gameObject.AddComponent<SettingsManager>();
+            timer.InitDisplay();
 
             triggerManager = gameObject.AddComponent<TriggerManager>().Initialize(timer);
-            triggerManager.ShowDisplay();
+            triggerManager.InitDisplay();
+
+            ui = gameObject.AddComponent<UI.UIManager>().Initialize(triggerManager, this, timer);
+            ui.InitDisplay();
 
             USceneManager.activeSceneChanged += SceneChanged;
             Object.DontDestroyOnLoad(gameObject);
+
+            this.ReloadSettings();
         }
 
         public void Unload() {
@@ -45,7 +50,7 @@ namespace HKTimer {
 
         public void ReloadSettings() {
             string path = Application.persistentDataPath + "/hktimer.json";
-            if (!File.Exists(path)) {
+            if(!File.Exists(path)) {
                 Modding.Logger.Log("[HKTimer] Writing default settings to " + path);
                 File.WriteAllText(path, JsonUtility.ToJson(settings, true));
             } else {
@@ -54,26 +59,12 @@ namespace HKTimer {
                 settings.LogBindErrors();
             }
             // Reload text positions
-            timer.ShowDisplay();
-            triggerManager.ShowDisplay();
+            timer.InitDisplay();
+            triggerManager.InitDisplay();
         }
 
         private void SceneChanged(Scene from, Scene to) {
             triggerManager.SpawnTriggers();
-        }
-    }
-
-    public class SettingsManager : MonoBehaviour {
-        public void Start() {
-            Modding.Logger.Log("[HKTimer] Reloading settings");
-            HKTimer.instance.ReloadSettings();
-        }
-
-        public void Update() {
-            if (StringInputManager.GetKeyDown(HKTimer.settings.reload_settings)) {
-                Modding.Logger.Log("[HKTimer] Reloading settings");
-                HKTimer.instance.ReloadSettings();
-            }
         }
     }
 }

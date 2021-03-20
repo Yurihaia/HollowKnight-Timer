@@ -15,11 +15,15 @@ namespace HKTimer {
         public TimeSpan pbDelta { get; set; } = TimeSpan.Zero;
         public bool runningSegment { get; set; } = false;
 
+        public TriggerPlaceType triggerPlaceType { get; set; } = TriggerPlaceType.Collision;
+
         private List<Trigger> triggers = new List<Trigger>();
         // Special start and end triggers you can place
         // only these ones will get changed using the keybinds
         private Trigger start;
         private Trigger end;
+
+        private bool displayShown;
 
         private Text pbDisplay;
         private GameObject pbDisplayObject;
@@ -37,7 +41,7 @@ namespace HKTimer {
             this.pbDeltaDisplayObject.SetActive(false);
         }
 
-        public void ShowDisplay() {
+        public void InitDisplay() {
             if(this.pbDisplayObject != null) {
                 GameObject.DestroyImmediate(this.pbDisplayObject);
             }
@@ -84,6 +88,16 @@ namespace HKTimer {
             Modding.Logger.Log("[HKTimer] Created display");
         }
 
+        public void ShowDisplay(bool show) {
+            this.displayShown = show;
+            this.pbDisplayObject.SetActive(show);
+            this.pbDeltaDisplayObject.SetActive(show);
+            if(show) {
+                GameObject.DontDestroyOnLoad(this.pbDisplayObject);
+                GameObject.DontDestroyOnLoad(this.pbDeltaDisplayObject);
+            }
+        }
+
         public TriggerManager Initialize(Timer timer) {
             this.timer = timer;
             this.timer.OnTimerReset += TimerReset;
@@ -120,22 +134,32 @@ namespace HKTimer {
                 } else if(this.pb > time) {
                     this.pbDelta = time - this.pb;
                     this.pb = time;
-                    this.pbDisplay.text = this.PbText();
                     this.pbDeltaDisplay.text = this.PbDeltaText();
-                    this.pbDeltaDisplayObject.SetActive(true);
-                    // fuck you unity :>
-                    // apparently setting an object to active
-                    // makes it need to have `DontDestroyOnLoad` called again
-                    // except apparently only on some versions???
-                    // idk man this worked so its gonna stay
-                    UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
+                    this.pbDisplay.text = this.PbText();
+                    if(this.displayShown) {
+                        this.pbDeltaDisplayObject.SetActive(true);
+                        // fuck you unity :>
+                        // apparently setting an object to active
+                        // makes it need to have `DontDestroyOnLoad` called again
+                        // except apparently only on some versions???
+                        // idk man this worked so its gonna stay
+                        UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
+                    }
                 } else {
                     this.pbDelta = time - this.pb;
                     this.pbDeltaDisplay.text = this.PbDeltaText();
-                    this.pbDeltaDisplayObject.SetActive(true);
-                    UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
+                    if(this.displayShown) {
+                        this.pbDeltaDisplayObject.SetActive(true);
+                        UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
+                    }
                 }
             }
+        }
+
+        public void ResetPB() {
+            this.pb = TimeSpan.Zero;
+            this.pbDeltaDisplayObject.SetActive(false);
+            this.pbDisplay.text = this.PbText();
         }
 
         public void SpawnTriggers() {
@@ -187,35 +211,55 @@ namespace HKTimer {
         public void Update() {
             if(StringInputManager.GetKeyDown(HKTimer.settings.set_start)) {
                 this.start?.Destroy(this);
-                this.start = new CollisionTrigger() {
-                    scene = GameManager.instance.sceneName,
-                    logic = new JValue("segment_start"),
-                    color = "green",
-                    start = HeroController.instance.transform.position - new Vector3(0.1f, 0.1f),
-                    end = HeroController.instance.transform.position + new Vector3(0.1f, 0.1f),
-                };
+                switch(this.triggerPlaceType) {
+                    case TriggerPlaceType.Collision:
+                        this.start = new CollisionTrigger() {
+                            scene = GameManager.instance.sceneName,
+                            logic = new JValue("segment_start"),
+                            color = "green",
+                            start = HeroController.instance.transform.position - new Vector3(0.1f, 0.1f),
+                            end = HeroController.instance.transform.position + new Vector3(0.1f, 0.1f),
+                        };
+                        break;
+                    case TriggerPlaceType.Movement:
+                        this.start = new MovementTrigger() {
+                            scene = GameManager.instance.sceneName,
+                            logic = new JValue("segment_start")
+                        };
+                        if(this.end != null) this.end.logic = new JArray {
+                            this.end.logic,
+                            JObject.FromObject(new {
+                                type = "command",
+                                command = "enable",
+                                trigger = new JValue("start"),
+                                data = new JObject()
+                            })
+                        };
+                        break;
+                }
                 this.start.Spawn(this);
                 this.pb = TimeSpan.Zero;
                 this.pbDisplay.text = this.PbText();
             }
             if(StringInputManager.GetKeyDown(HKTimer.settings.set_end)) {
                 this.end?.Destroy(this);
-                this.end = new CollisionTrigger() {
-                    scene = GameManager.instance.sceneName,
-                    logic = new JValue("segment_end"),
-                    color = "red",
-                    start = HeroController.instance.transform.position - new Vector3(0.1f, 0.1f),
-                    end = HeroController.instance.transform.position + new Vector3(0.1f, 0.1f),
+                switch(this.triggerPlaceType) {
+                    case TriggerPlaceType.Collision:
+                        this.end = new CollisionTrigger() {
+                            scene = GameManager.instance.sceneName,
+                            logic = new JValue("segment_end"),
+                            color = "red",
+                            start = HeroController.instance.transform.position - new Vector3(0.1f, 0.1f),
+                            end = HeroController.instance.transform.position + new Vector3(0.1f, 0.1f),
+                        };
+                        break;
+                    case TriggerPlaceType.Movement:
+                        Modding.Logger.LogWarn("Movement triggers will not work as an end");
+                        return;
                 };
                 this.end.Spawn(this);
                 this.pb = TimeSpan.Zero;
                 this.pbDisplay.text = this.PbText();
-            }
-            if(StringInputManager.GetKeyDown(HKTimer.settings.load_triggers)) {
-                LoadTriggers();
-            }
-            if(StringInputManager.GetKeyDown(HKTimer.settings.save_triggers)) {
-                SaveTriggers();
             }
         }
         public void OnDestroy() {
@@ -227,7 +271,7 @@ namespace HKTimer {
             if(this.timer != null) this.timer.OnTimerReset -= TimerReset;
         }
 
-        private void LoadTriggers() {
+        public void LoadTriggers() {
             try {
                 Modding.Logger.Log("[HKTimer] Loading triggers");
                 if(File.Exists(Application.persistentDataPath + "/hktimer_triggers.json")) {
@@ -249,7 +293,7 @@ namespace HKTimer {
                 Modding.Logger.LogError(e);
             }
         }
-        private void SaveTriggers() {
+        public void SaveTriggers() {
             try {
                 Modding.Logger.Log("[HKTimer] Saving triggers");
                 File.WriteAllText(
@@ -267,6 +311,11 @@ namespace HKTimer {
             } catch(Exception e) {
                 Modding.Logger.LogError(e);
             }
+        }
+
+        public enum TriggerPlaceType {
+            Collision,
+            Movement
         }
 
         public delegate void LogicPresetDelegate(string preset, ref bool successful);

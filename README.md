@@ -13,11 +13,9 @@ the defaults are
 {
     "pause": "[1]",
     "reset": "[0]",
-    "reload_settings": "[5]",
+    "open_ui": "[5]",
     "set_start": "[7]",
     "set_end": "[8]",
-    "load_triggers": "[9]",
-    "save_triggers": "[6]",
     "timerAnchorX": 0.15,
     "timerAnchorY": 0.1
 }

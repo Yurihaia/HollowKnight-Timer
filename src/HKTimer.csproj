@@ -3,7 +3,7 @@
         <ProjectGuid>{E3E4D0B7-656C-6C50-7567-696E2E57696E}</ProjectGuid>
         <TargetFramework>net35</TargetFramework>
         <AssemblyTitle>HKTimer</AssemblyTitle>
-        <AssemblyVersion>0.0.4</AssemblyVersion>
+        <AssemblyVersion>0.0.5</AssemblyVersion>
         <Product>HKTimer</Product>
         <DebugType>portable</DebugType>
         <Copyright>Copyright © 2021</Copyright>

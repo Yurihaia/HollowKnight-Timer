@@ -205,7 +205,8 @@ namespace HKTimer.UI {
     public class TriggerTypeOption {
         public static readonly TriggerTypeOption[] values = {
             new TriggerTypeOption(TriggerManager.TriggerPlaceType.Collision),
-            new TriggerTypeOption(TriggerManager.TriggerPlaceType.Movement)
+            new TriggerTypeOption(TriggerManager.TriggerPlaceType.Movement),
+            new TriggerTypeOption(TriggerManager.TriggerPlaceType.Scene)
         };
         public TriggerManager.TriggerPlaceType variant { get; set; }
         public TriggerTypeOption(TriggerManager.TriggerPlaceType variant) => this.variant = variant;
@@ -213,6 +214,7 @@ namespace HKTimer.UI {
             return this.variant switch {
                 TriggerManager.TriggerPlaceType.Collision => "Collision",
                 TriggerManager.TriggerPlaceType.Movement => "Movement",
+                TriggerManager.TriggerPlaceType.Scene => "Scene",
                 _ => "unknown"
             };
         }

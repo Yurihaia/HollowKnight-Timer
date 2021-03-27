@@ -19,10 +19,10 @@ namespace HKTimer {
             public override string Name => name;
 
             public override void Spawn(TriggerManager tm) {
-                if (this.scene == GameManager.instance.sceneName) {
+                if(this.scene == GameManager.instance.sceneName) {
                     this.Destroy(tm);
                     Color color;
-                    if (!ColorUtility.TryParseHtmlString(this.color, out color)) {
+                    if(!ColorUtility.TryParseHtmlString(this.color, out color)) {
                         Modding.Logger.LogError("Invalid color `" + color + "`.");
                         color = Color.black;
                     }
@@ -31,14 +31,14 @@ namespace HKTimer {
                         this.end,
                         "hktimer/trigger/collision",
                         () => {
-                            if (this.logic != null) HKTimer.instance.triggerManager.ExecLogic(this.logic);
+                            if(this.logic != null) HKTimer.instance.triggerManager.ExecLogic(this.logic);
                         },
                         color
                     );
                 }
             }
             public override void Destroy(TriggerManager tm) {
-                if (this.go != null) GameObject.Destroy(this.go);
+                if(this.go != null) GameObject.Destroy(this.go);
             }
             private static GameObject CreateTrigger(Vector2 start, Vector2 end, string name, Action onEnter, Color c) {
                 GameObject gameObject = CollisionTrigger.CreatePlane(new Vector3[]
@@ -87,7 +87,7 @@ namespace HKTimer {
             private class PlayerCollisionHandler : MonoBehaviour {
                 public Action onEnter;
                 private void OnTriggerEnter2D(Collider2D other) {
-                    if (other.gameObject == HeroController.instance.gameObject) {
+                    if(other.gameObject == HeroController.instance.gameObject) {
                         onEnter();
                     }
                 }

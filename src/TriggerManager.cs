@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using HKTimer.Triggers;
+using System.Collections;
 
 namespace HKTimer {
     public class TriggerManager : MonoBehaviour {
@@ -31,7 +32,12 @@ namespace HKTimer {
         private Text pbDeltaDisplay;
         private GameObject pbDeltaDisplayObject;
 
-        public Dictionary<string, Type> triggerTypes { get; } = new Dictionary<string, Type>();
+        public Dictionary<string, Type> triggerTypes { get; } = new Dictionary<string, Type>()
+        {
+            { CollisionTrigger.name, typeof(CollisionTrigger) },
+            { MovementTrigger.name, typeof(MovementTrigger) },
+            { SceneTrigger.name, typeof(SceneTrigger) }
+        };
 
         // MonoBehaviours
         public Timer timer { get; private set; }
@@ -169,8 +175,6 @@ namespace HKTimer {
         }
 
         public void Awake() {
-            triggerTypes.Add(CollisionTrigger.name, typeof(CollisionTrigger));
-            triggerTypes.Add(MovementTrigger.name, typeof(MovementTrigger));
             OnLogicPreset += (string p, ref bool s) => {
                 var o = true;
                 switch(p) {
@@ -236,6 +240,12 @@ namespace HKTimer {
                             })
                         };
                         break;
+                    case TriggerPlaceType.Scene:
+                        this.start = new SceneTrigger() {
+                            scene = GameManager.instance.sceneName,
+                            logic = new JValue("segment_end")
+                        };
+                        break;
                 }
                 this.start.Spawn(this);
                 this.pb = TimeSpan.Zero;
@@ -254,8 +264,14 @@ namespace HKTimer {
                         };
                         break;
                     case TriggerPlaceType.Movement:
-                        Modding.Logger.LogWarn("Movement triggers will not work as an end");
+                        this.end = null;
                         return;
+                    case TriggerPlaceType.Scene:
+                        this.end = new SceneTrigger() {
+                            scene = GameManager.instance.sceneName,
+                            logic = new JValue("segment_end")
+                        };
+                        break;
                 };
                 this.end.Spawn(this);
                 this.pb = TimeSpan.Zero;
@@ -301,9 +317,11 @@ namespace HKTimer {
                     JsonConvert.SerializeObject(
                         new TriggerSaveFile() {
                             pb_ticks = this.pb.Ticks,
-                            start = TriggerSave.FromTrigger(this.start),
-                            end = TriggerSave.FromTrigger(this.end),
-                            other = this.triggers?.ConvertAll(x => TriggerSave.FromTrigger(x)) ?? new List<TriggerSave>(),
+                            start = this.start == null ? null : TriggerSave.FromTrigger(this.start),
+                            end = this.end == null ? null : TriggerSave.FromTrigger(this.end),
+                            other = this.triggers?.ConvertAll(
+                                x => x == null ? null : TriggerSave.FromTrigger(x)
+                            ) ?? new List<TriggerSave>(),
                         },
                         Formatting.Indented
                     )
@@ -315,7 +333,8 @@ namespace HKTimer {
 
         public enum TriggerPlaceType {
             Collision,
-            Movement
+            Movement,
+            Scene
         }
 
         public delegate void LogicPresetDelegate(string preset, ref bool successful);

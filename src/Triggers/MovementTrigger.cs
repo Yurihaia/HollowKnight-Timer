@@ -39,6 +39,7 @@ namespace HKTimer {
                 public MovementHandler Initialize(JToken logic, TriggerManager tm) {
                     this.tm = tm;
                     this.logic = logic;
+                    this.tm.timer.OnTimerReset += this.TimerReset;
                     return this;
                 }
 
@@ -55,6 +56,15 @@ namespace HKTimer {
                             HKTimer.instance.triggerManager.ExecLogic(this.logic);
                         }
                     }
+                }
+
+                public void OnDestroy() {
+                    if(this.tm != null) this.tm.timer.OnTimerReset -= this.TimerReset;
+                }
+
+
+                private void TimerReset() {
+                    this.triggerEnabled = true;
                 }
             }
         }

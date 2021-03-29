@@ -2,6 +2,7 @@ using System.IO;
 using System.Reflection;
 using Modding;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
 
@@ -52,10 +53,13 @@ namespace HKTimer {
             string path = Application.persistentDataPath + "/hktimer.json";
             if(!File.Exists(path)) {
                 Modding.Logger.Log("[HKTimer] Writing default settings to " + path);
-                File.WriteAllText(path, JsonUtility.ToJson(settings, true));
+                File.WriteAllText(path, JsonConvert.SerializeObject(settings, Formatting.Indented));
             } else {
                 Modding.Logger.Log("[HKTimer] Reading settings from " + path);
-                settings = JsonUtility.FromJson<Settings>(File.ReadAllText(path));
+                settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(path));
+                // just to add the default shit I guess
+                // might remove this when the format stabilizes
+                File.WriteAllText(path, JsonConvert.SerializeObject(settings, Formatting.Indented));
                 settings.LogBindErrors();
             }
             // Reload text positions

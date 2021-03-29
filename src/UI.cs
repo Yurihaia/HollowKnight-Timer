@@ -58,10 +58,7 @@ namespace HKTimer.UI {
                 ),
                 new Vector2(-330, 180),
                 ToggleOption.values,
-                (v) => {
-                    this.timer.ShowDisplay(v.enabled);
-                    this.tm.ShowDisplay(v.enabled);
-                },
+                (v) => this.timer.ShowDisplay(v.enabled),
                 1
             );
             this.resetPb = new UIButton(

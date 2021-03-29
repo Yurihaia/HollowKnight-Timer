@@ -20,7 +20,9 @@ namespace HKTimer {
                 }
             }
             public override void Destroy(TriggerManager tm) {
-                if(go != null) GameObject.Destroy(go);
+                if(go != null) {
+                    GameObject.Destroy(go);
+                }
             }
 
             public override void TriggerCommand(string command, JObject data) {
@@ -46,11 +48,13 @@ namespace HKTimer {
                 public void Update() {
                     if(triggerEnabled) {
                         var hero_ctrl = GameManager.instance.hero_ctrl;
-                        var moving = hero_ctrl.current_velocity != new Vector2(0, 0) ||
+                        var moving = !hero_ctrl.controlReqlinquished && (
+                            hero_ctrl.current_velocity != new Vector2(0, 0) ||
                             hero_ctrl.cState.casting ||
                             hero_ctrl.cState.attacking ||
                             (hero_ctrl.cState.freezeCharge || hero_ctrl.cState.superDashOnWall) ||
-                            hero_ctrl.gameObject.LocateMyFSM("Dream Nail").ActiveStateName == "Charge";
+                            hero_ctrl.gameObject.LocateMyFSM("Dream Nail").ActiveStateName == "Charge"
+                        );
                         if(moving) {
                             this.triggerEnabled = false;
                             HKTimer.instance.triggerManager.ExecLogic(this.logic);

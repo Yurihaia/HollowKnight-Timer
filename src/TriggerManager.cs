@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using HKTimer.Triggers;
+using System.Text;
 using System.Collections;
 
 namespace HKTimer {
@@ -24,13 +25,9 @@ namespace HKTimer {
         private Trigger start;
         private Trigger end;
 
-        private bool displayShown;
-
-        private Text pbDisplay;
-        private GameObject pbDisplayObject;
-
-        private Text pbDeltaDisplay;
-        private GameObject pbDeltaDisplayObject;
+        private GameObject pbDisplay;
+        private GameObject pbStaticTextDisplay;
+        private GameObject pbDeltaDisplay;
 
         public Dictionary<string, Type> triggerTypes { get; } = new Dictionary<string, Type>()
         {
@@ -44,64 +41,64 @@ namespace HKTimer {
 
         public void TimerReset() {
             this.runningSegment = false;
-            this.pbDeltaDisplayObject.SetActive(false);
+            this.pbDeltaDisplay.SetActive(false);
         }
 
         public void InitDisplay() {
-            if(this.pbDisplayObject != null) {
-                GameObject.DestroyImmediate(this.pbDisplayObject);
+            if(this.timer != null && this.timer.timerCanvas != null) {
+                var timerCanvas = this.timer.timerCanvas;
+                CanvasUtil.CreateFonts();
+                this.pb = TimeSpan.Zero;
+                this.pbDisplay = CanvasUtil.CreateTextPanel(
+                    timerCanvas,
+                    this.PbText(),
+                    30,
+                    TextAnchor.MiddleRight,
+                    Timer.CreateTimerRectData(new Vector2(190, 30), new Vector2(-50, -45))
+                );
+                this.pbStaticTextDisplay = CanvasUtil.CreateTextPanel(
+                    timerCanvas,
+                    "PB",
+                    30,
+                    TextAnchor.MiddleRight,
+                    Timer.CreateTimerRectData(new Vector2(50, 30), new Vector2(0, -45))
+                );
+                this.pbDeltaDisplay = CanvasUtil.CreateTextPanel(
+                    timerCanvas,
+                    this.PbDeltaText(),
+                    20,
+                    TextAnchor.MiddleRight,
+                    Timer.CreateTimerRectData(new Vector2(120, 20), new Vector2(-50, -70))
+                );
+                this.pbDeltaDisplay.SetActive(false);
+            } else {
+                Modding.Logger.LogError(
+                    "[HKTimer] Timer canvas is null, not creating trigger display"
+                );
             }
-            if(this.pbDeltaDisplayObject != null) {
-                GameObject.DestroyImmediate(this.pbDeltaDisplayObject);
-            }
-            this.pbDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
-            this.pbDeltaDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
-            CanvasUtil.CreateFonts();
-            CanvasUtil.RectData pbRd = new CanvasUtil.RectData(
-                new Vector2(300, 75),
-                new Vector2(0.5f, 0.5f),
-                // offset x = 0.15f - 0.115f
-                // offset y = 0.1f - 0.05f
-                new Vector2(HKTimer.settings.timerAnchorX - 0.1f, HKTimer.settings.timerAnchorY - 0.05f),
-                new Vector2(HKTimer.settings.timerAnchorX - 0.1f, HKTimer.settings.timerAnchorY - 0.05f)
-            );
-            CanvasUtil.RectData pbDeltaRd = new CanvasUtil.RectData(
-                new Vector2(200, 50),
-                new Vector2(0.5f, 0.5f),
-                // offset x = 0.15f - 0.115f
-                // offset y = 0.1f - 0.1f
-                new Vector2(HKTimer.settings.timerAnchorX - 0.1f, HKTimer.settings.timerAnchorY - 0.1f),
-                new Vector2(HKTimer.settings.timerAnchorX - 0.1f, HKTimer.settings.timerAnchorY - 0.1f)
-            );
-            this.pb = TimeSpan.Zero;
-            this.pbDisplay = CanvasUtil.CreateTextPanel(
-                pbDisplayObject,
-                this.PbText(),
-                30,
-                TextAnchor.LowerRight,
-                pbRd
-            ).GetComponent<Text>();
-            this.pbDeltaDisplay = CanvasUtil.CreateTextPanel(
-                pbDeltaDisplayObject,
-                this.PbDeltaText(),
-                20,
-                TextAnchor.LowerRight,
-                pbDeltaRd
-            ).GetComponent<Text>();
-            UnityEngine.Object.DontDestroyOnLoad(this.pbDisplayObject);
-            UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
-            this.pbDeltaDisplayObject.SetActive(false);
-            Modding.Logger.Log("[HKTimer] Created display");
         }
 
-        public void ShowDisplay(bool show) {
-            this.displayShown = show;
-            this.pbDisplayObject.SetActive(show);
-            this.pbDeltaDisplayObject.SetActive(show);
-            if(show) {
-                GameObject.DontDestroyOnLoad(this.pbDisplayObject);
-                GameObject.DontDestroyOnLoad(this.pbDeltaDisplayObject);
-            }
+        private IEnumerator ShowAlert(string text) {
+            var canvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, 100);
+            var tp = CanvasUtil.CreateTextPanel(
+                canvas,
+                text,
+                20,
+                TextAnchor.LowerRight,
+                new CanvasUtil.RectData(
+                    new Vector2(1920, 80),
+                    new Vector2(-40, 40),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0)
+                )
+            );
+            GameObject.DontDestroyOnLoad(canvas);
+            var cg = tp.AddComponent<CanvasGroup>();
+            yield return CanvasUtil.FadeInCanvasGroup(cg);
+            yield return new WaitForSeconds(3f);
+            yield return CanvasUtil.FadeOutCanvasGroup(cg);
+            GameObject.DestroyImmediate(canvas);
         }
 
         public TriggerManager Initialize(Timer timer) {
@@ -112,7 +109,7 @@ namespace HKTimer {
 
         private string PbText() {
             return string.Format(
-                "PB {0,3}:{1:D2}.{2:D3}",
+                "{0}:{1:D2}.{2:D3}",
                 Math.Floor(this.pb.TotalMinutes),
                 this.pb.Seconds,
                 this.pb.Milliseconds
@@ -131,41 +128,32 @@ namespace HKTimer {
 
         public void UpdatePB() {
             var time = this.timer.time;
+            var pbText = this.pbDisplay.GetComponent<Text>();
+            var pbDeltaText = this.pbDeltaDisplay.GetComponent<Text>();
             if(this.timer.timerActive) {
                 if(this.pb == null || this.pb == TimeSpan.Zero) {
                     this.pb = time;
-                    this.pbDisplay.text = this.PbText();
+                    pbText.text = this.PbText();
                     this.pbDelta = TimeSpan.Zero;
-                    this.pbDeltaDisplayObject.SetActive(false);
+                    this.pbDeltaDisplay.SetActive(false);
                 } else if(this.pb > time) {
                     this.pbDelta = time - this.pb;
                     this.pb = time;
-                    this.pbDeltaDisplay.text = this.PbDeltaText();
-                    this.pbDisplay.text = this.PbText();
-                    if(this.displayShown) {
-                        this.pbDeltaDisplayObject.SetActive(true);
-                        // fuck you unity :>
-                        // apparently setting an object to active
-                        // makes it need to have `DontDestroyOnLoad` called again
-                        // except apparently only on some versions???
-                        // idk man this worked so its gonna stay
-                        UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
-                    }
+                    pbText.text = this.PbText();
+                    pbDeltaText.text = this.PbDeltaText();
+                    this.pbDeltaDisplay.SetActive(true);
                 } else {
                     this.pbDelta = time - this.pb;
-                    this.pbDeltaDisplay.text = this.PbDeltaText();
-                    if(this.displayShown) {
-                        this.pbDeltaDisplayObject.SetActive(true);
-                        UnityEngine.Object.DontDestroyOnLoad(this.pbDeltaDisplayObject);
-                    }
+                    pbDeltaText.text = this.PbDeltaText();
+                    this.pbDeltaDisplay.SetActive(true);
                 }
             }
         }
 
         public void ResetPB() {
             this.pb = TimeSpan.Zero;
-            this.pbDeltaDisplayObject.SetActive(false);
-            this.pbDisplay.text = this.PbText();
+            this.pbDeltaDisplay.SetActive(false);
+            this.pbDisplay.GetComponent<Text>().text = this.PbText();
         }
 
         public void SpawnTriggers() {
@@ -239,17 +227,19 @@ namespace HKTimer {
                                 data = new JObject()
                             })
                         };
+                        this.StartCoroutine(this.ShowAlert("Created movement trigger"));
                         break;
                     case TriggerPlaceType.Scene:
                         this.start = new SceneTrigger() {
                             scene = GameManager.instance.sceneName,
                             logic = new JValue("segment_end")
                         };
+                        this.StartCoroutine(this.ShowAlert("Created scene trigger"));
                         break;
                 }
                 this.start.Spawn(this);
                 this.pb = TimeSpan.Zero;
-                this.pbDisplay.text = this.PbText();
+                this.pbDisplay.GetComponent<Text>().text = this.PbText();
             }
             if(StringInputManager.GetKeyDown(HKTimer.settings.set_end)) {
                 this.end?.Destroy(this);
@@ -265,25 +255,27 @@ namespace HKTimer {
                         break;
                     case TriggerPlaceType.Movement:
                         this.end = null;
+                        this.StartCoroutine(this.ShowAlert("Cannot create movement trigger as end"));
                         return;
                     case TriggerPlaceType.Scene:
                         this.end = new SceneTrigger() {
                             scene = GameManager.instance.sceneName,
                             logic = new JValue("segment_end")
                         };
+                        this.StartCoroutine(this.ShowAlert("Created scene trigger"));
                         break;
                 };
                 this.end.Spawn(this);
                 this.pb = TimeSpan.Zero;
-                this.pbDisplay.text = this.PbText();
+                this.pbDisplay.GetComponent<Text>().text = this.PbText();
             }
         }
         public void OnDestroy() {
             this.start?.Destroy(this);
             this.end?.Destroy(this);
             this.triggers?.ForEach(x => x.Destroy(this));
-            GameObject.Destroy(this.pbDeltaDisplayObject);
-            GameObject.Destroy(this.pbDisplayObject);
+            GameObject.Destroy(this.pbDeltaDisplay);
+            GameObject.Destroy(this.pbDisplay);
             if(this.timer != null) this.timer.OnTimerReset -= TimerReset;
         }
 
@@ -302,7 +294,7 @@ namespace HKTimer {
                     this.triggers = triggers.other?.ConvertAll<Trigger>(x => x.ToTrigger(this)) ?? new List<Trigger>();
                     this.start = triggers.start.ToTrigger(this);
                     this.end = triggers.end.ToTrigger(this);
-                    this.pbDisplay.text = this.PbText();
+                    this.pbDisplay.GetComponent<Text>().text = this.PbText();
                     this.SpawnTriggers();
                 }
             } catch(Exception e) {

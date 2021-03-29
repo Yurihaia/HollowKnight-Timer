@@ -10,28 +10,39 @@ namespace HKTimer {
         public TimeSpan time { get; set; } = TimeSpan.Zero;
         public bool timerActive { get; set; } = false;
 
+        public GameObject timerCanvas { get; private set; }
+
         private Text frameDisplay;
-        private GameObject frameDisplayObject;
 
         public void InitDisplay() {
-            if (frameDisplayObject != null) {
-                GameObject.DestroyImmediate(frameDisplayObject);
+            if (timerCanvas != null) {
+                GameObject.DestroyImmediate(timerCanvas);
             }
-            frameDisplayObject = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
+            timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
             CanvasUtil.CreateFonts();
-            CanvasUtil.RectData timerRd = new CanvasUtil.RectData(
-                new Vector2(400, 100),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(HKTimer.settings.timerAnchorX, HKTimer.settings.timerAnchorY),
-                new Vector2(HKTimer.settings.timerAnchorX, HKTimer.settings.timerAnchorY)
+            frameDisplay = CanvasUtil.CreateTextPanel(
+                timerCanvas,
+                this.TimerText(),
+                40,
+                TextAnchor.MiddleRight,
+                CreateTimerRectData(new Vector2(240, 40), new Vector2())
+            ).GetComponent<Text>();
+            UnityEngine.Object.DontDestroyOnLoad(timerCanvas);
+        }
+
+        public static CanvasUtil.RectData CreateTimerRectData(Vector2 size, Vector2 relPosition) {
+            return new CanvasUtil.RectData(
+                size,
+                HKTimer.settings.timerPosition + relPosition,
+                new Vector2(),
+                new Vector2(),
+                new Vector2(1, 0.5f)
             );
-            frameDisplay = CanvasUtil.CreateTextPanel(frameDisplayObject, this.TimerText(), 40, TextAnchor.LowerLeft, timerRd).GetComponent<Text>();
-            UnityEngine.Object.DontDestroyOnLoad(frameDisplayObject);
         }
 
         public void ShowDisplay(bool show) {
-            this.frameDisplayObject.SetActive(show);
-            if(show) GameObject.DontDestroyOnLoad(this.frameDisplayObject);
+            this.timerCanvas.SetActive(show);
+            if(show) GameObject.DontDestroyOnLoad(this.timerCanvas);
         }
 
         private string TimerText() {
@@ -44,7 +55,7 @@ namespace HKTimer {
         }
 
         public void OnDestroy() {
-            GameObject.Destroy(frameDisplayObject);
+            GameObject.Destroy(timerCanvas);
         }
 
         public event Action OnTimerPause;

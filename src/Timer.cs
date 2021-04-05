@@ -15,7 +15,7 @@ namespace HKTimer {
         private Text frameDisplay;
 
         public void InitDisplay() {
-            if (timerCanvas != null) {
+            if(timerCanvas != null) {
                 GameObject.DestroyImmediate(timerCanvas);
             }
             timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
@@ -63,21 +63,21 @@ namespace HKTimer {
 
         public void Update() {
             var updateTimer = false;
-            if (StringInputManager.GetKeyDown(HKTimer.settings.pause)) {
+            if(StringInputManager.GetKeyDown(HKTimer.settings.pause)) {
                 timerActive ^= true;
                 OnTimerPause?.Invoke();
             }
-            if (StringInputManager.GetKeyDown(HKTimer.settings.reset)) {
+            if(StringInputManager.GetKeyDown(HKTimer.settings.reset)) {
                 time = TimeSpan.Zero;
                 timerActive = false;
                 updateTimer = true;
                 OnTimerReset?.Invoke();
             }
-            if (timerActive && !TimerShouldBePaused()) {
+            if(timerActive && !TimerShouldBePaused()) {
                 time += System.TimeSpan.FromSeconds(Time.unscaledDeltaTime);
-                if (Time.unscaledDeltaTime > 0) updateTimer = true;
+                if(Time.unscaledDeltaTime > 0) updateTimer = true;
             }
-            if (updateTimer) frameDisplay.text = this.TimerText();
+            if(updateTimer) frameDisplay.text = this.TimerText();
         }
 
 
@@ -93,9 +93,17 @@ namespace HKTimer {
             "tilemapDirty",
             BindingFlags.NonPublic | BindingFlags.Instance
         );
+        private static FieldInfo inputHandlerDebugInfo = typeof(InputHandler).GetField(
+            "debugInfo",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
+        private static FieldInfo onScreenDebugInfoVersion = typeof(OnScreenDebugInfo).GetField(
+            "versionNumber",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
 
         private bool TimerShouldBePaused() {
-            if (GameManager.instance == null) {
+            if(GameManager.instance == null) {
                 // GameState is INACTIVE, so the teleporting code will run
                 // teleporting defaults to false
                 // (lookForTeleporting && (
@@ -112,11 +120,11 @@ namespace HKTimer {
             var gameState = GameManager.instance.gameState;
 
             bool loadingMenu = (string.IsNullOrEmpty(nextScene) && sceneName != "Menu_Title") || (nextScene == "Menu_Title" && sceneName != "Menu_Title");
-            if (gameState == GameState.PLAYING && lastGameState == GameState.MAIN_MENU) {
+            if(gameState == GameState.PLAYING && lastGameState == GameState.MAIN_MENU) {
                 lookForTeleporting = true;
             }
-            bool teleporting = (bool)cameraControlTeleporting.GetValue(GameManager.instance.cameraCtrl);
-            if (lookForTeleporting && (teleporting || (gameState != GameState.PLAYING && gameState != GameState.ENTERING_LEVEL))) {
+            bool teleporting = (bool) cameraControlTeleporting.GetValue(GameManager.instance.cameraCtrl);
+            if(lookForTeleporting && (teleporting || (gameState != GameState.PLAYING && gameState != GameState.ENTERING_LEVEL))) {
                 lookForTeleporting = false;
             }
 
@@ -144,7 +152,10 @@ namespace HKTimer {
                     && (!string.IsNullOrEmpty(nextScene) || sceneName == "_test_charms" || loadingMenu)
                     && nextScene != sceneName
                 )
-                || (bool)gameManagerDirtyTileMap.GetValue(GameManager.instance);
+                || (
+                    ModHooks.Instance.version.gameVersion.minor < 3 &&
+                    (bool) gameManagerDirtyTileMap.GetValue(GameManager.instance)
+                );
 
             lastGameState = gameState;
 

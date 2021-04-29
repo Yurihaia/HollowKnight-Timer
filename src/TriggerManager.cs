@@ -78,7 +78,7 @@ namespace HKTimer {
             }
         }
 
-        private IEnumerator ShowAlert(string text) {
+        public IEnumerator ShowAlert(string text) {
             var canvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, 100);
             var tp = CanvasUtil.CreateTextPanel(
                 canvas,
@@ -130,23 +130,21 @@ namespace HKTimer {
             var time = this.timer.time;
             var pbText = this.pbDisplay.GetComponent<Text>();
             var pbDeltaText = this.pbDeltaDisplay.GetComponent<Text>();
-            if(this.timer.timerActive) {
-                if(this.pb == null || this.pb == TimeSpan.Zero) {
-                    this.pb = time;
-                    pbText.text = this.PbText();
-                    this.pbDelta = TimeSpan.Zero;
-                    this.pbDeltaDisplay.SetActive(false);
-                } else if(this.pb > time) {
-                    this.pbDelta = time - this.pb;
-                    this.pb = time;
-                    pbText.text = this.PbText();
-                    pbDeltaText.text = this.PbDeltaText();
-                    this.pbDeltaDisplay.SetActive(true);
-                } else {
-                    this.pbDelta = time - this.pb;
-                    pbDeltaText.text = this.PbDeltaText();
-                    this.pbDeltaDisplay.SetActive(true);
-                }
+            if(this.pb == null || this.pb == TimeSpan.Zero) {
+                this.pb = time;
+                pbText.text = this.PbText();
+                this.pbDelta = TimeSpan.Zero;
+                this.pbDeltaDisplay.SetActive(false);
+            } else if(this.pb > time) {
+                this.pbDelta = time - this.pb;
+                this.pb = time;
+                pbText.text = this.PbText();
+                pbDeltaText.text = this.PbDeltaText();
+                this.pbDeltaDisplay.SetActive(true);
+            } else {
+                this.pbDelta = time - this.pb;
+                pbDeltaText.text = this.PbDeltaText();
+                this.pbDeltaDisplay.SetActive(true);
             }
         }
 
@@ -167,27 +165,30 @@ namespace HKTimer {
                 var o = true;
                 switch(p) {
                     case "segment_start":
-                        if(!this.timer.timerActive) {
+                        if(this.timer.state == Timer.TimerState.STOPPED) {
+                            this.timer.ResetTimer();
+                            this.timer.StartTimer();
                             this.runningSegment = true;
-                            this.timer.time = TimeSpan.Zero;
-                            this.timer.timerActive = true;
                         }
                         break;
                     case "segment_end":
                         if(this.runningSegment) {
                             this.UpdatePB();
-                            this.timer.timerActive = false;
+                            this.timer.PauseTimer();
                             this.runningSegment = false;
                         }
                         break;
+                    case "timer_restart":
+                        this.timer.RestartTimer();
+                        break;
                     case "timer_reset":
-                        this.timer.time = TimeSpan.Zero;
+                        this.timer.ResetTimer();
                         break;
                     case "timer_pause":
-                        this.timer.timerActive = false;
+                        this.timer.PauseTimer();
                         break;
-                    case "timer_resume":
-                        this.timer.timerActive = true;
+                    case "timer_start":
+                        this.timer.StartTimer();
                         break;
                     default:
                         o = false;
@@ -232,7 +233,7 @@ namespace HKTimer {
                     case TriggerPlaceType.Scene:
                         this.start = new SceneTrigger() {
                             scene = GameManager.instance.sceneName,
-                            logic = new JValue("segment_end")
+                            logic = new JValue("segment_start")
                         };
                         this.StartCoroutine(this.ShowAlert("Created scene trigger"));
                         break;

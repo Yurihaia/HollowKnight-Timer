@@ -4,11 +4,13 @@ using UnityEngine.UI;
 using GlobalEnums;
 using System;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace HKTimer {
     public class Timer : MonoBehaviour {
-        public TimeSpan time { get; set; } = TimeSpan.Zero;
-        public bool timerActive { get; set; } = false;
+        public TimeSpan time { get => this.stopwatch.Elapsed; }
+        public TimerState state { get; private set; } = TimerState.STOPPED;
+        public Stopwatch stopwatch { get; private set; } = new Stopwatch();
 
         public GameObject timerCanvas { get; private set; }
 
@@ -58,33 +60,60 @@ namespace HKTimer {
             GameObject.Destroy(timerCanvas);
         }
 
+        public void StartTimer() {
+            this.OnTimerStart?.Invoke();
+            this.state = TimerState.RUNNING;
+            this.stopwatch.Start();
+        }
+
+        public void PauseTimer() {
+            this.OnTimerPause?.Invoke();
+            this.state = TimerState.STOPPED;
+            this.stopwatch.Stop();
+        }
+
+        public void ResetTimer() {
+            this.OnTimerReset?.Invoke();
+            this.state = TimerState.STOPPED;
+            this.stopwatch.Reset();
+            frameDisplay.text = this.TimerText();
+        }
+
+        public void RestartTimer() {
+            this.state = TimerState.RUNNING;
+            this.stopwatch.Reset();
+            frameDisplay.text = this.TimerText();
+            this.stopwatch.Start();
+        }
+
+        public event Action OnTimerStart;
         public event Action OnTimerPause;
         public event Action OnTimerReset;
 
         public void Update() {
-            var updateTimer = false;
             if(StringInputManager.GetKeyDown(HKTimer.settings.pause)) {
-                timerActive ^= true;
-                OnTimerPause?.Invoke();
+                if(this.state != TimerState.STOPPED) this.PauseTimer();
+                else if(this.state == TimerState.STOPPED) this.StartTimer();
             }
             if(StringInputManager.GetKeyDown(HKTimer.settings.reset)) {
-                time = TimeSpan.Zero;
-                timerActive = false;
-                updateTimer = true;
-                OnTimerReset?.Invoke();
+                this.ResetTimer();
             }
-            if(timerActive && !TimerShouldBePaused()) {
-                time += System.TimeSpan.FromSeconds(Time.unscaledDeltaTime);
-                if(Time.unscaledDeltaTime > 0) updateTimer = true;
+            if(this.state == TimerState.RUNNING && this.TimerShouldBePaused()) {
+                this.PauseTimer();
+                this.state = TimerState.IN_LOAD;
+            } else if(this.state == TimerState.IN_LOAD && !this.TimerShouldBePaused()) {
+                this.StartTimer();
             }
-            if(updateTimer) frameDisplay.text = this.TimerText();
+            if(this.state == TimerState.RUNNING) {
+                frameDisplay.text = this.TimerText();
+            }
         }
-
 
         // This uses the same disgusting logic as the autosplitter
         private bool lookForTeleporting;
         private GameState lastGameState = GameState.INACTIVE;
 
+        // TODO remove the reflection in favor of something actually fast
         private static FieldInfo cameraControlTeleporting = typeof(CameraController).GetField(
             "teleporting",
             BindingFlags.NonPublic | BindingFlags.Instance
@@ -160,6 +189,12 @@ namespace HKTimer {
             lastGameState = gameState;
 
             return shouldPause;
+        }
+
+        public enum TimerState {
+            STOPPED,
+            RUNNING,
+            IN_LOAD
         }
     }
 }

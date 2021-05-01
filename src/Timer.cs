@@ -90,6 +90,20 @@ namespace HKTimer {
         public event Action OnTimerPause;
         public event Action OnTimerReset;
 
+        public void Start() {
+            ModHooks.Instance.BeforeSceneLoadHook += this.OnSyncLoad;
+        }
+
+        private string OnSyncLoad(string name) {
+            this.PauseTimer();
+            this.state = TimerState.IN_LOAD;
+            return name;
+        }
+
+        public void UnloadHooks() {
+            ModHooks.Instance.BeforeSceneLoadHook -= this.OnSyncLoad;
+        }
+
         public void Update() {
             if(StringInputManager.GetKeyDown(HKTimer.settings.pause)) {
                 if(this.state != TimerState.STOPPED) this.PauseTimer();

@@ -44,6 +44,7 @@ namespace HKTimer {
         }
 
         public void Unload() {
+            this.timer.UnloadHooks();
             GameObject.Destroy(gameObject);
             USceneManager.activeSceneChanged -= SceneChanged;
             HKTimer.instance = null;

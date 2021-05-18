@@ -172,7 +172,7 @@ namespace HKTimer {
                         }
                         break;
                     case "segment_end":
-                        if(this.runningSegment) {
+                        if(this.timer.state != Timer.TimerState.STOPPED && this.runningSegment) {
                             this.UpdatePB();
                             this.timer.PauseTimer();
                             this.runningSegment = false;

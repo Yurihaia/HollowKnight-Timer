@@ -70,6 +70,7 @@ namespace HKTimer {
             this.OnTimerPause?.Invoke();
             this.state = TimerState.STOPPED;
             this.stopwatch.Stop();
+            frameDisplay.text = this.TimerText();
         }
 
         public void ResetTimer() {
@@ -90,13 +91,15 @@ namespace HKTimer {
         public event Action OnTimerPause;
         public event Action OnTimerReset;
 
-        public void Start() {
+        public void Awake() {
             ModHooks.Instance.BeforeSceneLoadHook += this.OnSyncLoad;
         }
 
         private string OnSyncLoad(string name) {
-            this.PauseTimer();
-            this.state = TimerState.IN_LOAD;
+            if(this.state == TimerState.RUNNING) {
+                this.PauseTimer();
+                this.state = TimerState.IN_LOAD;
+            }
             return name;
         }
 
@@ -118,7 +121,7 @@ namespace HKTimer {
             } else if(this.state == TimerState.IN_LOAD && !this.TimerShouldBePaused()) {
                 this.StartTimer();
             }
-            if(this.state == TimerState.RUNNING) {
+            if(this.state != TimerState.STOPPED) {
                 frameDisplay.text = this.TimerText();
             }
         }

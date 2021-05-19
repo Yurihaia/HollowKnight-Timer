@@ -1,3 +1,6 @@
+# NOTICE
+This code is to display the changes for the new modding api UI update for hollow knight 1.5. It is not released now and no information in this README is nescessarily applicable to the current released version
+
 # HKTimer
 Hollow Knight in-game timer mod
 

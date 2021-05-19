@@ -2,34 +2,33 @@
 Hollow Knight in-game timer mod
 
 ## Installation
-To install the mod, grab the release ZIP from [the latest release](https://github.com/Yurihaia/HollowKnight-Timer/releases).
-Extract all 3 `.dll` files into the `Mods` folder in your Hollow Knight installation.  
-The modding API will say that `System.Runtime.Serialization.dll` failed to load but this is completely normal
+To install the mod, grab the release DLL from [the latest release](https://github.com/Yurihaia/HollowKnight-Timer/releases).
+Put the DLL into the `Mods` folder in your Hollow Knight installation.
 
 ## Settings
-The keybinds and various other settings can be edited in the `hktimer.json` in the same directory as your save files. They follow the unity keybind naming system.  
+The keybinds and various other settings can be edited in the `HKTimer.GlobalSettings.json` in the same directory as your save files. They follow the keybind naming system in the `InControl` unity asset. 
 the defaults are
 ```json
 {
-    "pause": "[1]",
-    "reset": "[0]",
-    "open_ui": "f1",
-    "set_start": "[7]",
-    "set_end": "[8]",
-    "timerPosition": {
-        "x": 1880.0,
-        "y": 1020.0
-    }
+  "keybinds": {
+    "pause": "Pad1",
+    "reset": "Pad0",
+    "set_start": "Pad7",
+    "set_end": "Pad8"
+  },
+  "timerPosition": {
+    "x": 1880.0,
+    "y": 1020.0
+  },
+  "textSize": 30,
+  "showTimer": true,
+  "trigger": "Scene"
 }
 ```
 ### timerPosition
 The setting `timerPosition` can be used to change the position of the timer text.
 The point specified is the Middle-Right point of the main timer text rectangle.
 Values is the pixels of the screen from the lower left corner.
-
-## GUI
-This mod comes with a badly programmed GUI that can be opened with the `open_ui` keybind.
-In the ui you can use the up/down keys to navigate, and the left/right keys to change the options, and the menu accept key to activate buttons (like "Save Triggers", "Reload Settings", etc)
 
 ## Triggers
 Currently, you are able to place a start and an end trigger that can start and pause the timer respectively.

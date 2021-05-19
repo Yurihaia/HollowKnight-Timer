@@ -12,7 +12,7 @@ namespace HKTimer {
         public Vector2 timerPosition = new Vector2(1880, 1020);
         public int textSize = 30;
         public bool showTimer = true;
-        public TriggerManager.TriggerPlaceType trigger = TriggerManager.TriggerPlaceType.Collision;
+        public string trigger = "Collision";
     }
 
     public class TimerActions : PlayerActionSet {

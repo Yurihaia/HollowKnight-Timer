@@ -40,7 +40,11 @@ namespace HKTimer {
 
             triggerManager = gameObject.AddComponent<TriggerManager>().Initialize(timer);
             triggerManager.InitDisplay();
-            triggerManager.triggerPlaceType = settings.trigger;
+            if(System.Enum.TryParse<TriggerManager.TriggerPlaceType>(settings.trigger, out var t)) {
+                triggerManager.triggerPlaceType = t;
+            } else {
+                LogError($"Invalid trigger name {settings.trigger}");
+            }
 
             USceneManager.activeSceneChanged += SceneChanged;
             Object.DontDestroyOnLoad(gameObject);
@@ -112,15 +116,16 @@ namespace HKTimer {
                                 label = "Trigger Type",
                                 options = new string[] { "Collision", "Movement", "Scene" },
                                 applySetting = (_, i) => {
-                                    settings.trigger = i switch {
+                                    var trigger = i switch {
                                         0 => TriggerManager.TriggerPlaceType.Collision,
                                         1 => TriggerManager.TriggerPlaceType.Movement,
                                         2 => TriggerManager.TriggerPlaceType.Scene,
                                         _ => default // shouldn't ever happen
                                     };
                                     if(HKTimer.instance != null) {
-                                        HKTimer.instance.triggerManager.triggerPlaceType = settings.trigger;
+                                        HKTimer.instance.triggerManager.triggerPlaceType = trigger;
                                     }
+                                    settings.trigger = trigger.ToString();
                                 }
                             }
                         ).AddMenuButton(

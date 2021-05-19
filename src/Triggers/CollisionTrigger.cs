@@ -1,13 +1,14 @@
 using System;
 using Newtonsoft.Json;
 using UnityEngine;
+using Modding.Converters;
 
 namespace HKTimer {
     namespace Triggers {
         public class CollisionTrigger : Trigger {
-            [JsonConverter(typeof(JsonVec2Converter))]
+            [JsonConverter(typeof(Vector2Converter))]
             public Vector2 start;
-            [JsonConverter(typeof(JsonVec2Converter))]
+            [JsonConverter(typeof(Vector2Converter))]
             public Vector2 end;
 
             public string color;
@@ -23,7 +24,7 @@ namespace HKTimer {
                     this.Destroy(tm);
                     Color color;
                     if(!ColorUtility.TryParseHtmlString(this.color, out color)) {
-                        Modding.Logger.LogError("Invalid color `" + color + "`.");
+                        HKTimer.instance.LogError("Invalid color `" + color + "`.");
                         color = Color.black;
                     }
                     this.go = CreateTrigger(
@@ -57,12 +58,11 @@ namespace HKTimer {
                 GameObject gameObject = new GameObject(name);
                 gameObject.AddComponent<MeshFilter>().mesh = CreateMesh(vert);
                 MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-                meshRenderer.material.shader = Shader.Find("Particles/Multiply");
                 Texture2D tex = new Texture2D(1, 1);
                 tex.SetPixel(0, 0, c ?? Color.white);
                 tex.Apply();
                 meshRenderer.material.mainTexture = tex;
-                meshRenderer.material.color = Color.white;
+                meshRenderer.material.color = c ?? Color.white;
                 gameObject.AddComponent<BoxCollider2D>().isTrigger = true;
                 gameObject.SetActive(true);
                 return gameObject;
@@ -71,12 +71,11 @@ namespace HKTimer {
                 Mesh mesh = new Mesh {
                     name = "ScriptedMesh",
                     vertices = vertices,
-                    uv = new Vector2[]
-                    {
-                    new Vector2(0f, 0f),
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f)
+                    uv = new Vector2[] {
+                        new Vector2(0f, 0f),
+                        new Vector2(0f, 1f),
+                        new Vector2(1f, 1f),
+                        new Vector2(1f, 0f)
                     },
                     triangles = new int[] { 0, 1, 2, 1, 2, 3 }
                 };

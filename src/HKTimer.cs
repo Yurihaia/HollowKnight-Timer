@@ -1,23 +1,29 @@
-using System.IO;
 using System.Reflection;
 using Modding;
 using UnityEngine.SceneManagement;
-using Newtonsoft.Json;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
+using Modding.Menu;
+using Modding.Menu.Config;
 
 namespace HKTimer {
-    public class HKTimer : Mod, ITogglableMod {
-
-        public static Settings settings { get; private set; } = new Settings();
+    public class HKTimer : Mod, ITogglableMod, ICustomMenuMod {
+        public static Settings settings { get; set; } = new Settings();
+        public override ModSettings GlobalSettings {
+            get => settings;
+            set {
+                if(value is Settings s) {
+                    s.keybinds.SetDefaultBinds();
+                    settings = s;
+                }
+            }
+        }
 
         public static HKTimer instance { get; private set; }
 
         public GameObject gameObject { get; private set; }
         public Timer timer { get; private set; }
         public TriggerManager triggerManager { get; private set; }
-        // oh god oh fuck
-        public UI.UIManager ui { get; private set; }
 
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
@@ -30,46 +36,135 @@ namespace HKTimer {
 
             timer = gameObject.AddComponent<Timer>();
             timer.InitDisplay();
+            timer.ShowDisplay(settings.showTimer);
 
             triggerManager = gameObject.AddComponent<TriggerManager>().Initialize(timer);
             triggerManager.InitDisplay();
-
-            ui = gameObject.AddComponent<UI.UIManager>().Initialize(triggerManager, this, timer);
-            ui.InitDisplay();
+            triggerManager.triggerPlaceType = settings.trigger;
 
             USceneManager.activeSceneChanged += SceneChanged;
             Object.DontDestroyOnLoad(gameObject);
-
-            this.ReloadSettings();
         }
 
         public void Unload() {
             this.timer.UnloadHooks();
-            GameObject.Destroy(gameObject);
+            GameObject.DestroyImmediate(gameObject);
             USceneManager.activeSceneChanged -= SceneChanged;
             HKTimer.instance = null;
         }
 
-        public void ReloadSettings() {
-            string path = Application.persistentDataPath + "/hktimer.json";
-            if(!File.Exists(path)) {
-                Modding.Logger.Log("[HKTimer] Writing default settings to " + path);
-                File.WriteAllText(path, JsonConvert.SerializeObject(settings, Formatting.Indented));
-            } else {
-                Modding.Logger.Log("[HKTimer] Reading settings from " + path);
-                settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(path));
-                // just to add the default shit I guess
-                // might remove this when the format stabilizes
-                File.WriteAllText(path, JsonConvert.SerializeObject(settings, Formatting.Indented));
-                settings.LogBindErrors();
-            }
-            // Reload text positions
-            timer.InitDisplay();
-            triggerManager.InitDisplay();
-        }
-
         private void SceneChanged(Scene from, Scene to) {
             triggerManager.SpawnTriggers();
+        }
+
+        public MenuScreen GetMenuScreen(MenuScreen modListMenu) {
+            return new MenuBuilder(UIManager.instance.UICanvas.gameObject, "HKTimerMenu")
+                .CreateTitle("HKTimer", MenuTitleStyle.vanillaStyle)
+                .CreateContentPane(RectTransformData.FromSizeAndPos(
+                    new RelVector2(new Vector2(1920f, 903f)),
+                    new AnchoredPosition(
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(0f, -60f)
+                    )
+                ))
+                .CreateControlPane(RectTransformData.FromSizeAndPos(
+                    new RelVector2(new Vector2(1920f, 259f)),
+                    new AnchoredPosition(
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(0f, -502f)
+                    )
+                ))
+                .CreateAutoMenuNav()
+                .AddContent(
+                    RegularGridLayout.CreateVerticalLayout(105f),
+                    c => {
+                        c.AddHorizontalOption(
+                            "ShowTimerOption",
+                            new HorizontalOptionConfig {
+                                label = "Show Timer",
+                                options = new string[] { "Off", "On" },
+                                applySetting = (_, i) => {
+                                    settings.showTimer = i == 1;
+                                    if(HKTimer.instance != null) {
+                                        HKTimer.instance.timer.ShowDisplay(settings.showTimer);
+                                    }
+                                },
+                                refreshSetting = (s, _) => s.optionList.SetOptionTo(settings.showTimer ? 1 : 0),
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                style = HorizontalOptionStyle.vanillaStyle
+                            },
+                            out var showTimerButton
+                        ).AddMenuButton(
+                            "ResetBestButton",
+                            new MenuButtonConfig {
+                                label = "Reset Personal Best",
+                                submitAction = _ => {
+                                    if(HKTimer.instance != null) HKTimer.instance.triggerManager.ResetPB();
+                                },
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                style = MenuButtonStyle.vanillaStyle
+                            }
+                        ).AddHorizontalOption(
+                            "TriggerTypeOption",
+                            new HorizontalOptionConfig {
+                                label = "Trigger Type",
+                                options = new string[] { "Collision", "Movement", "Scene" },
+                                applySetting = (_, i) => {
+                                    settings.trigger = i switch {
+                                        0 => TriggerManager.TriggerPlaceType.Collision,
+                                        1 => TriggerManager.TriggerPlaceType.Movement,
+                                        2 => TriggerManager.TriggerPlaceType.Scene,
+                                        _ => default // shouldn't ever happen
+                                    };
+                                    if(HKTimer.instance != null) {
+                                        HKTimer.instance.triggerManager.triggerPlaceType = settings.trigger;
+                                    }
+                                }
+                            }
+                        ).AddMenuButton(
+                            "LoadTriggersButton",
+                            new MenuButtonConfig {
+                                label = "Load Triggers",
+                                submitAction = _ => {
+                                    if(HKTimer.instance != null) HKTimer.instance.triggerManager.LoadTriggers();
+                                },
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                style = MenuButtonStyle.vanillaStyle
+                            }
+                        ).AddMenuButton(
+                            "SaveTriggersButton",
+                            new MenuButtonConfig {
+                                label = "Save Triggers",
+                                submitAction = _ => {
+                                    if(HKTimer.instance != null) HKTimer.instance.triggerManager.SaveTriggers();
+                                },
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                style = MenuButtonStyle.vanillaStyle
+                            }
+                        );
+                        showTimerButton.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
+                    }
+                )
+                .AddControls(
+                    new SingleContentLayout(new AnchoredPosition(
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(0f, -64f)
+                    )),
+                    c => c.AddMenuButton(
+                        "BackButton",
+                        new MenuButtonConfig {
+                            label = "Back",
+                            cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                            submitAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                            style = MenuButtonStyle.vanillaStyle,
+                            proceed = true
+                        }
+                    )
+                )
+                .Build();
         }
     }
 }

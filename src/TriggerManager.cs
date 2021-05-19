@@ -72,8 +72,8 @@ namespace HKTimer {
                 );
                 this.pbDeltaDisplay.SetActive(false);
             } else {
-                Modding.Logger.LogError(
-                    "[HKTimer] Timer canvas is null, not creating trigger display"
+                HKTimer.instance.LogError(
+                    "Timer canvas is null, not creating trigger display"
                 );
             }
         }
@@ -198,11 +198,11 @@ namespace HKTimer {
             };
         }
         public void Start() {
-            Modding.Logger.Log("[HKTimer] Started target manager");
+            HKTimer.instance.Log("Started target manager");
             LoadTriggers();
         }
         public void Update() {
-            if(StringInputManager.GetKeyDown(HKTimer.settings.set_start)) {
+            if(HKTimer.settings.keybinds.setStart.WasPressed) {
                 this.start?.Destroy(this);
                 switch(this.triggerPlaceType) {
                     case TriggerPlaceType.Collision:
@@ -242,7 +242,7 @@ namespace HKTimer {
                 this.pb = TimeSpan.Zero;
                 this.pbDisplay.GetComponent<Text>().text = this.PbText();
             }
-            if(StringInputManager.GetKeyDown(HKTimer.settings.set_end)) {
+            if(HKTimer.settings.keybinds.setEnd.WasPressed) {
                 this.end?.Destroy(this);
                 switch(this.triggerPlaceType) {
                     case TriggerPlaceType.Collision:
@@ -282,7 +282,7 @@ namespace HKTimer {
 
         public void LoadTriggers() {
             try {
-                Modding.Logger.Log("[HKTimer] Loading triggers");
+                HKTimer.instance.Log("Loading triggers");
                 if(File.Exists(Application.persistentDataPath + "/hktimer_triggers.json")) {
                     var triggers = JsonConvert.DeserializeObject<TriggerSaveFile>(File.ReadAllText(
                         Application.persistentDataPath + "/hktimer_triggers.json"
@@ -299,12 +299,12 @@ namespace HKTimer {
                     this.SpawnTriggers();
                 }
             } catch(Exception e) {
-                Modding.Logger.LogError(e);
+                HKTimer.instance.LogError(e);
             }
         }
         public void SaveTriggers() {
             try {
-                Modding.Logger.Log("[HKTimer] Saving triggers");
+                HKTimer.instance.Log("Saving triggers");
                 File.WriteAllText(
                     Application.persistentDataPath + "/hktimer_triggers.json",
                     JsonConvert.SerializeObject(
@@ -320,7 +320,7 @@ namespace HKTimer {
                     )
                 );
             } catch(Exception e) {
-                Modding.Logger.LogError(e);
+                HKTimer.instance.LogError(e);
             }
         }
 
@@ -347,10 +347,10 @@ namespace HKTimer {
                         var successful = false;
                         OnLogicPreset.Invoke(s, ref successful);
                         if(!successful) {
-                            Modding.Logger.LogError("[HKTimer] Invalid logic preset `" + s + "`");
+                            HKTimer.instance.LogError("Invalid logic preset `" + s + "`");
                         }
                     } else {
-                        Modding.Logger.LogError("[HKTimer] Invalid logic `" + v.ToString() + "`");
+                        HKTimer.instance.LogError("Invalid logic `" + v.ToString() + "`");
                     }
                     break;
                 case JObject v:
@@ -367,12 +367,12 @@ namespace HKTimer {
                             }
                             trigger.TriggerCommand(lcmd.command, lcmd.data);
                         } catch(Exception e) {
-                            Modding.Logger.LogError(e);
+                            HKTimer.instance.LogError(e);
                         }
                     }
                     break;
                 default:
-                    Modding.Logger.LogError("[HKTimer] Invalid logic `" + logic.ToString() + "`");
+                    HKTimer.instance.LogError("Invalid logic `" + logic.ToString() + "`");
                     break;
             }
         }
@@ -425,22 +425,5 @@ namespace HKTimer {
         public abstract void Destroy(TriggerManager tm);
 
         public virtual void TriggerCommand(string command, JObject data) { }
-    }
-
-
-    public class JsonVec2Converter : JsonConverter {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-            var vec = (Vector2) value;
-            JObject j = new JObject { { "x", vec.x }, { "y", vec.y } };
-            j.WriteTo(writer);
-        }
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
-            return existingValue;
-        }
-        public override bool CanWrite => true;
-        public override bool CanRead => false;
-        public override bool CanConvert(Type objectType) {
-            return objectType == typeof(Vector2);
-        }
     }
 }

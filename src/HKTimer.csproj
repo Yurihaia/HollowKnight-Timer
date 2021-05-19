@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <ProjectGuid>{E3E4D0B7-656C-6C50-7567-696E2E57696E}</ProjectGuid>
-        <TargetFramework>net35</TargetFramework>
+        <TargetFramework>net472</TargetFramework>
         <AssemblyTitle>HKTimer</AssemblyTitle>
         <AssemblyVersion>0.0.6</AssemblyVersion>
         <Product>HKTimer</Product>
@@ -12,33 +12,41 @@
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp">
-            <HintPath>..\..\references\1221-modded\Assembly-CSharp.dll</HintPath>
+            <HintPath>..\..\references\1566-modded\Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1221-modded\UnityEngine.dll</HintPath>
+            <HintPath>..\..\references\1566-modded\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\references\1566-modded\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1221-modded\UnityEngine.UI.dll</HintPath>
+            <HintPath>..\..\references\1566-modded\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\references\1566-modded\UnityEngine.UIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\references\1566-modded\UnityEngine.TextRenderingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\references\1566-modded\UnityEngine.Physics2DModule.dll</HintPath>
         </Reference>
         <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1221-modded\PlayMaker.dll</HintPath>
+            <HintPath>..\..\references\1566-modded\PlayMaker.dll</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\references\1566-modded\Newtonsoft.Json.dll</HintPath>
         </Reference>
         <Reference Include="System.Core" />
-        <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\JsonNet\Newtonsoft.Json.dll</HintPath>
-        </Reference>
     </ItemGroup>
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\\..\\references\\1221-modded\\Mods\\" SkipUnchangedFiles="false" />
-        <Copy SourceFiles="$(SolutionDir)/JsonNet/Newtonsoft.Json.dll" DestinationFolder="..\\..\\references\\1221-modded\\Mods\\" SkipUnchangedFiles="false" />
-        <Copy SourceFiles="$(SolutionDir)/JsonNet/System.Runtime.Serialization.dll" DestinationFolder="..\\..\\references\\1221-modded\\Mods\\" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\\..\\references\\1566-modded\\Mods\\" SkipUnchangedFiles="false" />
     </Target>
     <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
         <MakeDir Directories="$(ProjectDir)Output" />
         <Delete Files="$(ProjectDir)/HKTimer.zip" />
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
-        <Copy SourceFiles="$(SolutionDir)/JsonNet/Newtonsoft.Json.dll" DestinationFolder="$(ProjectDir)/Output/" />
-        <Copy SourceFiles="$(SolutionDir)/JsonNet/System.Runtime.Serialization.dll" DestinationFolder="$(ProjectDir)/Output/" />
         <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" />
         <ZipDirectory DestinationFile="$(ProjectDir)/HKTimer.zip" SourceDirectory="$(ProjectDir)/Output" />
         <RemoveDir Directories="$(ProjectDir)Output" />

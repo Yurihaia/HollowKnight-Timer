@@ -17,19 +17,15 @@ namespace HKTimer {
         private Text frameDisplay;
 
         public void InitDisplay() {
-            if(timerCanvas != null) {
-                GameObject.DestroyImmediate(timerCanvas);
-            }
-            timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
+            timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, new Vector2(1920, 1080));
             CanvasUtil.CreateFonts();
             frameDisplay = CanvasUtil.CreateTextPanel(
                 timerCanvas,
                 this.TimerText(),
-                40,
+                HKTimer.settings.textSize * 4 / 3,
                 TextAnchor.MiddleRight,
                 CreateTimerRectData(new Vector2(240, 40), new Vector2())
             ).GetComponent<Text>();
-            UnityEngine.Object.DontDestroyOnLoad(timerCanvas);
         }
 
         public static CanvasUtil.RectData CreateTimerRectData(Vector2 size, Vector2 relPosition) {
@@ -43,6 +39,8 @@ namespace HKTimer {
         }
 
         public void ShowDisplay(bool show) {
+            if(show) HKTimer.instance.Log("Displaying timer");
+            else HKTimer.instance.Log("Hiding timer");
             this.timerCanvas.SetActive(show);
             if(show) GameObject.DontDestroyOnLoad(this.timerCanvas);
         }
@@ -57,6 +55,7 @@ namespace HKTimer {
         }
 
         public void OnDestroy() {
+            HKTimer.instance.Log("Destroying Timer canvas");
             GameObject.Destroy(timerCanvas);
         }
 
@@ -108,11 +107,11 @@ namespace HKTimer {
         }
 
         public void Update() {
-            if(StringInputManager.GetKeyDown(HKTimer.settings.pause)) {
+            if(HKTimer.settings.keybinds.pause.WasPressed) {
                 if(this.state != TimerState.STOPPED) this.PauseTimer();
                 else if(this.state == TimerState.STOPPED) this.StartTimer();
             }
-            if(StringInputManager.GetKeyDown(HKTimer.settings.reset)) {
+            if(HKTimer.settings.keybinds.reset.WasPressed) {
                 this.ResetTimer();
             }
             if(this.state == TimerState.RUNNING && this.TimerShouldBePaused()) {

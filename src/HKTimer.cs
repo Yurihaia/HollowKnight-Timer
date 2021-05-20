@@ -7,16 +7,16 @@ using Modding.Menu;
 using Modding.Menu.Config;
 
 namespace HKTimer {
-    public class HKTimer : Mod, ITogglableMod, ICustomMenuMod {
+    public class HKTimer : Mod, ITogglableMod, ICustomMenuMod, GlobalSettings<Settings>, LocalSettings<double> {
         public static Settings settings { get; set; } = new Settings();
-        public override ModSettings GlobalSettings {
-            get => settings;
-            set {
-                if(value is Settings s) {
-                    s.keybinds.SetDefaultBinds();
-                    settings = s;
-                }
-            }
+
+        public void OnLoadGlobal(Settings s) => settings = s;
+        public Settings OnSaveGlobal() => settings;
+
+        public void OnLoadLocal(double s) => Log($"Loaded {s}");
+        public double OnSaveLocal() {
+            if(triggerManager != null) return triggerManager.pb.TotalSeconds;
+            else return 0;
         }
 
         public static HKTimer instance { get; private set; }
@@ -99,7 +99,7 @@ namespace HKTimer {
                                 cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                                 style = HorizontalOptionStyle.vanillaStyle
                             },
-                            out var showTimerButton
+                            out var showTimerOption
                         ).AddMenuButton(
                             "ResetBestButton",
                             new MenuButtonConfig {
@@ -115,6 +115,7 @@ namespace HKTimer {
                             new HorizontalOptionConfig {
                                 label = "Trigger Type",
                                 options = new string[] { "Collision", "Movement", "Scene" },
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                                 applySetting = (_, i) => {
                                     var trigger = i switch {
                                         0 => TriggerManager.TriggerPlaceType.Collision,
@@ -126,8 +127,14 @@ namespace HKTimer {
                                         HKTimer.instance.triggerManager.triggerPlaceType = trigger;
                                     }
                                     settings.trigger = trigger.ToString();
+                                },
+                                refreshSetting = (s, _) => {
+                                    if(System.Enum.TryParse(settings.trigger, out TriggerManager.TriggerPlaceType t)) {
+                                        s.optionList.SetOptionTo((int) t);
+                                    }
                                 }
-                            }
+                            },
+                            out var triggerTypeOption
                         ).AddMenuButton(
                             "LoadTriggersButton",
                             new MenuButtonConfig {
@@ -148,8 +155,37 @@ namespace HKTimer {
                                 cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                                 style = MenuButtonStyle.vanillaStyle
                             }
+                        ).AddKeybind(
+                            "PauseKeybind",
+                            settings.keybinds.pause,
+                            new KeybindConfig {
+                                label = "Pause",
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                            }
+                        ).AddKeybind(
+                            "ResetKeybind",
+                            settings.keybinds.reset,
+                            new KeybindConfig {
+                                label = "Reset",
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                            }
+                        ).AddKeybind(
+                            "SetStartKeybind",
+                            settings.keybinds.setStart,
+                            new KeybindConfig {
+                                label = "Set Start",
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                            }
+                        ).AddKeybind(
+                            "SetStartKeybind",
+                            settings.keybinds.setEnd,
+                            new KeybindConfig {
+                                label = "Set End",
+                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                            }
                         );
-                        showTimerButton.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
+                        showTimerOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
+                        triggerTypeOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
                     }
                 )
                 .AddControls(

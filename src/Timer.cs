@@ -61,13 +61,16 @@ namespace HKTimer {
         }
 
         public void StartTimer() {
-            this.OnTimerStart?.Invoke();
-            this.state = TimerState.RUNNING;
-            this.stopwatch.Start();
+            if(this.TimerShouldBePaused()) {
+                this.state = TimerState.IN_LOAD;
+                this.stopwatch.Stop();
+            } else {
+                this.state = TimerState.RUNNING;
+                this.stopwatch.Start();
+            }
         }
 
         public void PauseTimer() {
-            this.OnTimerPause?.Invoke();
             this.state = TimerState.STOPPED;
             this.stopwatch.Stop();
             frameDisplay.text = this.TimerText();
@@ -81,14 +84,11 @@ namespace HKTimer {
         }
 
         public void RestartTimer() {
-            this.state = TimerState.RUNNING;
             this.stopwatch.Reset();
             frameDisplay.text = this.TimerText();
-            this.stopwatch.Start();
+            this.StartTimer();
         }
 
-        public event Action OnTimerStart;
-        public event Action OnTimerPause;
         public event Action OnTimerReset;
 
         public void Awake() {
@@ -118,7 +118,7 @@ namespace HKTimer {
             if(this.state == TimerState.RUNNING && this.TimerShouldBePaused()) {
                 this.PauseTimer();
                 this.state = TimerState.IN_LOAD;
-            } else if(this.state == TimerState.IN_LOAD && !this.TimerShouldBePaused()) {
+            } else if(this.state == TimerState.IN_LOAD) {
                 this.StartTimer();
             }
             if(this.state != TimerState.STOPPED) {

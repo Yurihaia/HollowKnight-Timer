@@ -293,8 +293,8 @@ namespace HKTimer {
                     this.end?.Destroy(this);
 
                     this.triggers = triggers.other?.ConvertAll<Trigger>(x => x.ToTrigger(this)) ?? new List<Trigger>();
-                    this.start = triggers.start.ToTrigger(this);
-                    this.end = triggers.end.ToTrigger(this);
+                    this.start = triggers.start?.ToTrigger(this);
+                    this.end = triggers.end?.ToTrigger(this);
                     this.pbDisplay.GetComponent<Text>().text = this.PbText();
                     this.SpawnTriggers();
                 }

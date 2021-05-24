@@ -155,7 +155,14 @@ namespace HKTimer {
                                 cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                                 style = MenuButtonStyle.vanillaStyle
                             }
-                        ).AddKeybind(
+                        );
+                        // should be guaranteed from `MenuBuilder.AddContent`
+                        if(c.layout is RegularGridLayout layout) {
+                            var l = layout.itemAdvance;
+                            l.x = new RelLength(750f);
+                            layout.ChangeColumns(2, 0.5f, l, 0.5f);
+                        }
+                        c.AddKeybind(
                             "PauseKeybind",
                             settings.keybinds.pause,
                             new KeybindConfig {

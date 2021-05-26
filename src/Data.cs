@@ -11,7 +11,7 @@ namespace HKTimer {
 
         [JsonConverter(typeof(JsonVec2Converter))]
         public Vector2 timerPosition = new Vector2(1880, 1020);
-        public int textSize = 30;
+        public int textSize = 40;
 
         public void LogBindErrors() {
             StringInputManager.LogBindErors(new string[] {

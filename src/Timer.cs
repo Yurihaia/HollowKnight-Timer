@@ -20,12 +20,12 @@ namespace HKTimer {
             if(timerCanvas != null) {
                 GameObject.DestroyImmediate(timerCanvas);
             }
-            timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
+            timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, new Vector2(1920, 1080));
             CanvasUtil.CreateFonts();
             frameDisplay = CanvasUtil.CreateTextPanel(
                 timerCanvas,
                 this.TimerText(),
-                40,
+                HKTimer.settings.textSize,
                 TextAnchor.MiddleRight,
                 CreateTimerRectData(new Vector2(240, 40), new Vector2())
             ).GetComponent<Text>();

@@ -52,21 +52,21 @@ namespace HKTimer {
                 this.pbDisplay = CanvasUtil.CreateTextPanel(
                     timerCanvas,
                     this.PbText(),
-                    HKTimer.settings.textSize,
+                    HKTimer.settings.textSize * 3 / 4,
                     TextAnchor.MiddleRight,
                     Timer.CreateTimerRectData(new Vector2(190, 30), new Vector2(-50, -45))
                 );
                 this.pbStaticTextDisplay = CanvasUtil.CreateTextPanel(
                     timerCanvas,
                     "PB",
-                    HKTimer.settings.textSize,
+                    HKTimer.settings.textSize * 3 / 4,
                     TextAnchor.MiddleRight,
                     Timer.CreateTimerRectData(new Vector2(50, 30), new Vector2(0, -45))
                 );
                 this.pbDeltaDisplay = CanvasUtil.CreateTextPanel(
                     timerCanvas,
                     this.PbDeltaText(),
-                    HKTimer.settings.textSize * 2 / 3,
+                    HKTimer.settings.textSize / 2,
                     TextAnchor.MiddleRight,
                     Timer.CreateTimerRectData(new Vector2(120, 20), new Vector2(-50, -70))
                 );

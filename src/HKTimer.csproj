@@ -9,19 +9,20 @@
         <Copyright>Copyright © 2021</Copyright>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>latest</LangVersion>
+        <HollowKnightRefs>../../references/1221-modded/</HollowKnightRefs>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp">
-            <HintPath>..\..\references\1221-modded\Assembly-CSharp.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1221-modded\UnityEngine.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1221-modded\UnityEngine.UI.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.UI.dll</HintPath>
         </Reference>
         <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1221-modded\PlayMaker.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
         </Reference>
         <Reference Include="System.Core" />
         <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=null">
@@ -29,9 +30,9 @@
         </Reference>
     </ItemGroup>
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\\..\\references\\1221-modded\\Mods\\" SkipUnchangedFiles="false" />
-        <Copy SourceFiles="$(SolutionDir)/JsonNet/Newtonsoft.Json.dll" DestinationFolder="..\\..\\references\\1221-modded\\Mods\\" SkipUnchangedFiles="false" />
-        <Copy SourceFiles="$(SolutionDir)/JsonNet/System.Runtime.Serialization.dll" DestinationFolder="..\\..\\references\\1221-modded\\Mods\\" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(HollowKnightRefs)/Mods/" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(SolutionDir)/JsonNet/Newtonsoft.Json.dll" DestinationFolder="$(HollowKnightRefs)/Mods/" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(SolutionDir)/JsonNet/System.Runtime.Serialization.dll" DestinationFolder="$(HollowKnightRefs)/Mods/" SkipUnchangedFiles="false" />
     </Target>
     <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
         <MakeDir Directories="$(ProjectDir)Output" />

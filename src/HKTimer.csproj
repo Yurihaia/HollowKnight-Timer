@@ -9,39 +9,40 @@
         <Copyright>Copyright © 2021</Copyright>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>latest</LangVersion>
+        <HollowKnightRefs>../../references/1568-modded/</HollowKnightRefs>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp">
-            <HintPath>..\..\references\1566-modded\Assembly-CSharp.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\UnityEngine.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\UnityEngine.CoreModule.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\UnityEngine.UI.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.UI.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\UnityEngine.UIModule.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.UIModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\UnityEngine.TextRenderingModule.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.TextRenderingModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\UnityEngine.Physics2DModule.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/UnityEngine.Physics2DModule.dll</HintPath>
         </Reference>
         <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\references\1566-modded\PlayMaker.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
         </Reference>
         <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\references\1566-modded\Newtonsoft.Json.dll</HintPath>
+            <HintPath>$(HollowKnightRefs)/Newtonsoft.Json.dll</HintPath>
         </Reference>
         <Reference Include="System.Core" />
     </ItemGroup>
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\\..\\references\\1566-modded\\Mods\\" SkipUnchangedFiles="false" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(HollowKnightRefs)/Mods/" SkipUnchangedFiles="false" />
     </Target>
     <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
         <MakeDir Directories="$(ProjectDir)Output" />

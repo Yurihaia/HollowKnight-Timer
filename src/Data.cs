@@ -5,7 +5,7 @@ using Modding.Converters;
 using Modding;
 
 namespace HKTimer {
-    public class Settings : ModSettings {
+    public class Settings {
         [JsonConverter(typeof(PlayerActionSetConverter))]
         public TimerActions keybinds = new TimerActions();
         [JsonConverter(typeof(Vector2Converter))]

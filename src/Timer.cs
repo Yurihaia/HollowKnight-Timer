@@ -91,7 +91,7 @@ namespace HKTimer {
         public event Action OnTimerReset;
 
         public void Awake() {
-            ModHooks.Instance.BeforeSceneLoadHook += this.OnSyncLoad;
+            ModHooks.BeforeSceneLoadHook += this.OnSyncLoad;
         }
 
         private string OnSyncLoad(string name) {
@@ -103,7 +103,7 @@ namespace HKTimer {
         }
 
         public void UnloadHooks() {
-            ModHooks.Instance.BeforeSceneLoadHook -= this.OnSyncLoad;
+            ModHooks.BeforeSceneLoadHook -= this.OnSyncLoad;
         }
 
         public void Update() {
@@ -198,7 +198,7 @@ namespace HKTimer {
                     && nextScene != sceneName
                 )
                 || (
-                    ModHooks.Instance.version.gameVersion.minor < 3 &&
+                    ModHooks.version.gameVersion.minor < 3 &&
                     (bool) gameManagerDirtyTileMap.GetValue(GameManager.instance)
                 );
 

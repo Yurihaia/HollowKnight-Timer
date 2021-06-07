@@ -7,7 +7,7 @@ using Modding.Menu;
 using Modding.Menu.Config;
 
 namespace HKTimer {
-    public class HKTimer : Mod, ITogglableMod, ICustomMenuMod, GlobalSettings<Settings>, LocalSettings<double> {
+    public class HKTimer : Mod, ITogglableMod, ICustomMenuMod, IGlobalSettings<Settings> {
         public static Settings settings { get; set; } = new Settings();
 
         public void OnLoadGlobal(Settings s) => settings = s;
@@ -87,36 +87,36 @@ namespace HKTimer {
                         c.AddHorizontalOption(
                             "ShowTimerOption",
                             new HorizontalOptionConfig {
-                                label = "Show Timer",
-                                options = new string[] { "Off", "On" },
-                                applySetting = (_, i) => {
+                                Label = "Show Timer",
+                                Options = new string[] { "Off", "On" },
+                                ApplySetting = (_, i) => {
                                     settings.showTimer = i == 1;
                                     if(HKTimer.instance != null) {
                                         HKTimer.instance.timer.ShowDisplay(settings.showTimer);
                                     }
                                 },
-                                refreshSetting = (s, _) => s.optionList.SetOptionTo(settings.showTimer ? 1 : 0),
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                                style = HorizontalOptionStyle.vanillaStyle
+                                RefreshSetting = (s, _) => s.optionList.SetOptionTo(settings.showTimer ? 1 : 0),
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                Style = HorizontalOptionStyle.VanillaStyle
                             },
                             out var showTimerOption
                         ).AddMenuButton(
                             "ResetBestButton",
                             new MenuButtonConfig {
-                                label = "Reset Personal Best",
-                                submitAction = _ => {
+                                Label = "Reset Personal Best",
+                                SubmitAction = _ => {
                                     if(HKTimer.instance != null) HKTimer.instance.triggerManager.ResetPB();
                                 },
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                                style = MenuButtonStyle.vanillaStyle
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                Style = MenuButtonStyle.VanillaStyle
                             }
                         ).AddHorizontalOption(
                             "TriggerTypeOption",
                             new HorizontalOptionConfig {
-                                label = "Trigger Type",
-                                options = new string[] { "Collision", "Movement", "Scene" },
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                                applySetting = (_, i) => {
+                                Label = "Trigger Type",
+                                Options = new string[] { "Collision", "Movement", "Scene" },
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                ApplySetting = (_, i) => {
                                     var trigger = i switch {
                                         0 => TriggerManager.TriggerPlaceType.Collision,
                                         1 => TriggerManager.TriggerPlaceType.Movement,
@@ -128,7 +128,7 @@ namespace HKTimer {
                                     }
                                     settings.trigger = trigger.ToString();
                                 },
-                                refreshSetting = (s, _) => {
+                                RefreshSetting = (s, _) => {
                                     if(System.Enum.TryParse(settings.trigger, out TriggerManager.TriggerPlaceType t)) {
                                         s.optionList.SetOptionTo((int) t);
                                     }
@@ -138,27 +138,27 @@ namespace HKTimer {
                         ).AddMenuButton(
                             "LoadTriggersButton",
                             new MenuButtonConfig {
-                                label = "Load Triggers",
-                                submitAction = _ => {
+                                Label = "Load Triggers",
+                                SubmitAction = _ => {
                                     if(HKTimer.instance != null) HKTimer.instance.triggerManager.LoadTriggers();
                                 },
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                                style = MenuButtonStyle.vanillaStyle
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                Style = MenuButtonStyle.VanillaStyle
                             }
                         ).AddMenuButton(
                             "SaveTriggersButton",
                             new MenuButtonConfig {
-                                label = "Save Triggers",
-                                submitAction = _ => {
+                                Label = "Save Triggers",
+                                SubmitAction = _ => {
                                     if(HKTimer.instance != null) HKTimer.instance.triggerManager.SaveTriggers();
                                 },
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                                style = MenuButtonStyle.vanillaStyle
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                Style = MenuButtonStyle.VanillaStyle
                             }
                         );
                         // should be guaranteed from `MenuBuilder.AddContent`
                         if(c.layout is RegularGridLayout layout) {
-                            var l = layout.itemAdvance;
+                            var l = layout.ItemAdvance;
                             l.x = new RelLength(750f);
                             layout.ChangeColumns(2, 0.5f, l, 0.5f);
                         }
@@ -166,29 +166,29 @@ namespace HKTimer {
                             "PauseKeybind",
                             settings.keybinds.pause,
                             new KeybindConfig {
-                                label = "Pause",
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                Label = "Pause",
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
                             }
                         ).AddKeybind(
                             "ResetKeybind",
                             settings.keybinds.reset,
                             new KeybindConfig {
-                                label = "Reset",
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                Label = "Reset",
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
                             }
                         ).AddKeybind(
                             "SetStartKeybind",
                             settings.keybinds.setStart,
                             new KeybindConfig {
-                                label = "Set Start",
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                Label = "Set Start",
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
                             }
                         ).AddKeybind(
                             "SetStartKeybind",
                             settings.keybinds.setEnd,
                             new KeybindConfig {
-                                label = "Set End",
-                                cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                Label = "Set End",
+                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
                             }
                         );
                         showTimerOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
@@ -204,11 +204,11 @@ namespace HKTimer {
                     c => c.AddMenuButton(
                         "BackButton",
                         new MenuButtonConfig {
-                            label = "Back",
-                            cancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                            submitAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                            style = MenuButtonStyle.vanillaStyle,
-                            proceed = true
+                            Label = "Back",
+                            CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                            SubmitAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                            Style = MenuButtonStyle.VanillaStyle,
+                            Proceed = true
                         }
                     )
                 )

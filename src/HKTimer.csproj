@@ -3,7 +3,7 @@
         <ProjectGuid>{E3E4D0B7-656C-6C50-7567-696E2E57696E}</ProjectGuid>
         <TargetFramework>net35</TargetFramework>
         <AssemblyTitle>HKTimer</AssemblyTitle>
-        <AssemblyVersion>0.0.8</AssemblyVersion>
+        <AssemblyVersion>0.1.0</AssemblyVersion>
         <Product>HKTimer</Product>
         <DebugType>portable</DebugType>
         <Copyright>Copyright © 2021</Copyright>
@@ -26,7 +26,7 @@
         </Reference>
         <Reference Include="System.Core" />
         <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\JsonNet\Newtonsoft.Json.dll</HintPath>
+            <HintPath>../JsonNet/Newtonsoft.Json.dll</HintPath>
         </Reference>
     </ItemGroup>
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">

@@ -68,7 +68,10 @@ namespace HKTimer.UI {
                 ),
                 new Vector2(-210, 120),
                 () => {
-                    if(this.tm != null) this.tm.ResetPB();
+                    if(this.tm != null) {
+                        this.tm.ResetPB();
+                        this.tm.ShowAlert("Reset PB");
+                    }
                 }
             );
 
@@ -92,7 +95,10 @@ namespace HKTimer.UI {
                 ),
                 new Vector2(-210, -60),
                 () => {
-                    if(this.tm != null) this.tm.SaveTriggers();
+                    if(this.tm != null) {
+                        this.tm.SaveTriggers();
+                        this.tm.ShowAlert("Saved Triggers");
+                    }
                 }
             );
             this.loadTriggers = new UIButton(
@@ -102,7 +108,10 @@ namespace HKTimer.UI {
                 ),
                 new Vector2(-210, -120),
                 () => {
-                    if(this.tm != null) this.tm.LoadTriggers();
+                    if(this.tm != null) {
+                        this.tm.LoadTriggers();
+                        this.tm.ShowAlert("Loaded Triggers");
+                    }
                 }
             );
 
@@ -113,7 +122,10 @@ namespace HKTimer.UI {
                 ),
                 new Vector2(-210, -240),
                 () => {
-                    if(this.hktimer != null) this.hktimer.ReloadSettings();
+                    if(this.hktimer != null) {
+                        this.hktimer.ReloadSettings();
+                        if(this.tm != null) this.tm.ShowAlert("Reloaded Settings");
+                    }
                 }
             );
 

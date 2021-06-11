@@ -22,6 +22,9 @@ the defaults are
     }
 }
 ```
+Note that `"[1]"` means numpad 1.  
+See this image for a full list of acceptable inputs:
+[Acceptable Inputs](./readme/Acceptable_Inputs.png)
 ### timerPosition
 The setting `timerPosition` can be used to change the position of the timer text.
 The point specified is the Middle-Right point of the main timer text rectangle.

@@ -78,7 +78,9 @@ namespace HKTimer {
             }
         }
 
-        public IEnumerator ShowAlert(string text) {
+        private GameObject displayedAlert;
+        public void ShowAlert(string text) {
+            if(this.displayedAlert != null) this.displayedAlert.SetActive(false);
             var canvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, 100);
             var tp = CanvasUtil.CreateTextPanel(
                 canvas,
@@ -95,9 +97,59 @@ namespace HKTimer {
             );
             GameObject.DontDestroyOnLoad(canvas);
             var cg = tp.AddComponent<CanvasGroup>();
-            yield return CanvasUtil.FadeInCanvasGroup(cg);
+            this.displayedAlert = tp;
+            this.StartCoroutine(this.AnimateAlert(cg, canvas));
+        }
+        
+        // slightly modified code to allow overriding a fade
+        private static IEnumerator FadeInCanvasGroup(CanvasGroup cg) {
+            float loopFailsafe = 0f;
+            cg.alpha = 0f;
+            cg.gameObject.SetActive(true);
+            while(cg.alpha < 1f) {
+                cg.alpha += Time.unscaledDeltaTime * 3.2f;
+                loopFailsafe += Time.unscaledDeltaTime;
+                if(cg.alpha >= 0.95f) {
+                    cg.alpha = 1f;
+                    break;
+                }
+
+                if(loopFailsafe >= 2f) {
+                    break;
+                }
+
+                yield return null;
+            }
+
+            cg.alpha = 1f;
+            cg.interactable = true;
+            yield return null;
+        }
+        private static IEnumerator FadeOutCanvasGroup(CanvasGroup cg) {
+            float loopFailsafe = 0f;
+            cg.interactable = false;
+            while(cg.alpha > 0.05f) {
+                cg.alpha -= Time.unscaledDeltaTime * 3.2f;
+                loopFailsafe += Time.unscaledDeltaTime;
+                if(cg.alpha <= 0.05f) {
+                    break;
+                }
+
+                if(loopFailsafe >= 2f) {
+                    break;
+                }
+
+                yield return null;
+            }
+
+            cg.alpha = 0f;
+            yield return null;
+        }
+
+        private IEnumerator AnimateAlert(CanvasGroup cg, GameObject canvas) {
+            yield return FadeInCanvasGroup(cg);
             yield return new WaitForSeconds(3f);
-            yield return CanvasUtil.FadeOutCanvasGroup(cg);
+            yield return FadeOutCanvasGroup(cg);
             GameObject.DestroyImmediate(canvas);
         }
 
@@ -228,14 +280,14 @@ namespace HKTimer {
                                 data = new JObject()
                             })
                         };
-                        this.StartCoroutine(this.ShowAlert("Created movement trigger"));
+                        this.ShowAlert("Created movement trigger");
                         break;
                     case TriggerPlaceType.Scene:
                         this.start = new SceneTrigger() {
                             scene = GameManager.instance.sceneName,
                             logic = new JValue("segment_start")
                         };
-                        this.StartCoroutine(this.ShowAlert("Created scene trigger"));
+                        this.ShowAlert("Created scene trigger");
                         break;
                 }
                 this.start.Spawn(this);
@@ -256,14 +308,14 @@ namespace HKTimer {
                         break;
                     case TriggerPlaceType.Movement:
                         this.end = null;
-                        this.StartCoroutine(this.ShowAlert("Cannot create movement trigger as end"));
+                        this.ShowAlert("Cannot create movement trigger as end");
                         return;
                     case TriggerPlaceType.Scene:
                         this.end = new SceneTrigger() {
                             scene = GameManager.instance.sceneName,
                             logic = new JValue("segment_end")
                         };
-                        this.StartCoroutine(this.ShowAlert("Created scene trigger"));
+                        this.ShowAlert("Created scene trigger");
                         break;
                 };
                 this.end.Spawn(this);

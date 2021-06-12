@@ -157,7 +157,7 @@ namespace HKTimer {
                             }
                         );
                         // should be guaranteed from `MenuBuilder.AddContent`
-                        if(c.layout is RegularGridLayout layout) {
+                        if(c.Layout is RegularGridLayout layout) {
                             var l = layout.ItemAdvance;
                             l.x = new RelLength(750f);
                             layout.ChangeColumns(2, 0.5f, l, 0.5f);

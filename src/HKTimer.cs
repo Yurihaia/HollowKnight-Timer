@@ -5,6 +5,7 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
 using Modding.Menu;
 using Modding.Menu.Config;
+using UnityEngine.UI;
 
 namespace HKTimer {
     public class HKTimer : Mod, ITogglableMod, ICustomMenuMod, IGlobalSettings<Settings> {
@@ -62,6 +63,9 @@ namespace HKTimer {
         }
 
         public MenuScreen GetMenuScreen(MenuScreen modListMenu) {
+            MenuOptionHorizontal showTimerOption = null;
+            MappableKey setStartKeybind = null;
+            MappableKey setEndKeybind = null;
             return new MenuBuilder(UIManager.instance.UICanvas.gameObject, "HKTimerMenu")
                 .CreateTitle("HKTimer", MenuTitleStyle.vanillaStyle)
                 .CreateContentPane(RectTransformData.FromSizeAndPos(
@@ -80,7 +84,7 @@ namespace HKTimer {
                         new Vector2(0f, -502f)
                     )
                 ))
-                .CreateAutoMenuNav()
+                .SetDefaultNavGraph(new GridNavGraph(1))
                 .AddContent(
                     RegularGridLayout.CreateVerticalLayout(105f),
                     c => {
@@ -99,7 +103,7 @@ namespace HKTimer {
                                 CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                                 Style = HorizontalOptionStyle.VanillaStyle
                             },
-                            out var showTimerOption
+                            out showTimerOption
                         ).AddMenuButton(
                             "ResetBestButton",
                             new MenuButtonConfig {
@@ -154,7 +158,8 @@ namespace HKTimer {
                                 },
                                 CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                                 Style = MenuButtonStyle.VanillaStyle
-                            }
+                            },
+                            out var saveTriggersButton
                         );
                         // should be guaranteed from `MenuBuilder.AddContent`
                         if(c.Layout is RegularGridLayout layout) {
@@ -162,13 +167,16 @@ namespace HKTimer {
                             l.x = new RelLength(750f);
                             layout.ChangeColumns(2, 0.5f, l, 0.5f);
                         }
+                        GridNavGraph navGraph = c.NavGraph as GridNavGraph;
+                        navGraph.ChangeColumns(2);
                         c.AddKeybind(
                             "PauseKeybind",
                             settings.keybinds.pause,
                             new KeybindConfig {
                                 Label = "Pause",
                                 CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
-                            }
+                            },
+                            out var pauseKeybind
                         ).AddKeybind(
                             "ResetKeybind",
                             settings.keybinds.reset,
@@ -182,15 +190,19 @@ namespace HKTimer {
                             new KeybindConfig {
                                 Label = "Set Start",
                                 CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
-                            }
+                            },
+                            out setStartKeybind
                         ).AddKeybind(
-                            "SetStartKeybind",
+                            "SetEndKeybind",
                             settings.keybinds.setEnd,
                             new KeybindConfig {
                                 Label = "Set End",
                                 CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
-                            }
+                            },
+                            out setEndKeybind
                         );
+                        navGraph.ChangeColumns(2);
+
                         showTimerOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
                         triggerTypeOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
                     }
@@ -209,7 +221,8 @@ namespace HKTimer {
                             SubmitAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
                             Style = MenuButtonStyle.VanillaStyle,
                             Proceed = true
-                        }
+                        },
+                        out var backButton
                     )
                 )
                 .Build();

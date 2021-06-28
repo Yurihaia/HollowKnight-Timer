@@ -26,6 +26,8 @@ namespace HKTimer {
         public Timer timer { get; private set; }
         public TriggerManager triggerManager { get; private set; }
 
+        internal MenuScreen screen;
+
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public override void Initialize() {
@@ -38,7 +40,7 @@ namespace HKTimer {
             timer = gameObject.AddComponent<Timer>();
             timer.InitDisplay();
             timer.ShowDisplay(settings.showTimer);
-
+            gameObject.AddComponent<MenuKeybindListener>();
             triggerManager = gameObject.AddComponent<TriggerManager>().Initialize(timer);
             triggerManager.InitDisplay();
             if(System.Enum.TryParse<TriggerManager.TriggerPlaceType>(settings.trigger, out var t)) {
@@ -66,7 +68,7 @@ namespace HKTimer {
             MenuOptionHorizontal showTimerOption = null;
             MappableKey setStartKeybind = null;
             MappableKey setEndKeybind = null;
-            return new MenuBuilder(UIManager.instance.UICanvas.gameObject, "HKTimerMenu")
+            this.screen = new MenuBuilder(UIManager.instance.UICanvas.gameObject, "HKTimerMenu")
                 .CreateTitle("HKTimer", MenuTitleStyle.vanillaStyle)
                 .CreateContentPane(RectTransformData.FromSizeAndPos(
                     new RelVector2(new Vector2(1920f, 903f)),
@@ -136,6 +138,9 @@ namespace HKTimer {
                                     if(System.Enum.TryParse(settings.trigger, out TriggerManager.TriggerPlaceType t)) {
                                         s.optionList.SetOptionTo((int) t);
                                     }
+                                },
+                                Description = new DescriptionInfo {
+                                    Text = "The trigger type to place."
                                 }
                             },
                             out var triggerTypeOption
@@ -226,6 +231,17 @@ namespace HKTimer {
                     )
                 )
                 .Build();
+            return this.screen;
+        }
+    }
+
+    public class MenuKeybindListener : MonoBehaviour {
+        public void Update() {
+            if(HKTimer.settings.keybinds.openMenu.WasPressed) {
+                if(GameManager.instance != null) {
+                    this.StartCoroutine(GameManager.instance.PauseToggleDynamicMenu(HKTimer.instance.screen));
+                }
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine;
 using Modding.Menu;
 using Modding.Menu.Config;
 using UnityEngine.UI;
+using System;
 
 namespace HKTimer {
     public class HKTimer : Mod, ITogglableMod, ICustomMenuMod, IGlobalSettings<Settings> {
@@ -25,6 +26,8 @@ namespace HKTimer {
         public GameObject gameObject { get; private set; }
         public Timer timer { get; private set; }
         public TriggerManager triggerManager { get; private set; }
+
+        public bool ToggleButtonInsideMenu => true;
 
         internal MenuScreen screen;
 
@@ -50,7 +53,7 @@ namespace HKTimer {
             }
 
             USceneManager.activeSceneChanged += SceneChanged;
-            Object.DontDestroyOnLoad(gameObject);
+            GameObject.DontDestroyOnLoad(gameObject);
         }
 
         public void Unload() {
@@ -64,8 +67,13 @@ namespace HKTimer {
             triggerManager.SpawnTriggers();
         }
 
-        public MenuScreen GetMenuScreen(MenuScreen modListMenu) {
-            MenuOptionHorizontal showTimerOption = null;
+        public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? toggleDelegates) {
+            // this should always work
+            var dels = toggleDelegates.Value;
+            Action<MenuSelectable> cancelAction = _ => {
+                dels.ApplyChange();
+                UIManager.instance.UIGoToDynamicMenu(modListMenu);
+            };
             MappableKey setStartKeybind = null;
             MappableKey setEndKeybind = null;
             this.screen = new MenuBuilder(UIManager.instance.UICanvas.gameObject, "HKTimerMenu")
@@ -91,6 +99,16 @@ namespace HKTimer {
                     RegularGridLayout.CreateVerticalLayout(105f),
                     c => {
                         c.AddHorizontalOption(
+                            "ToggleModOption",
+                            new HorizontalOptionConfig {
+                                Label = "Mod Enabled",
+                                Options = new string[] { "Off", "On" },
+                                ApplySetting = (_, i) => dels.SetModEnabled(i == 1),
+                                RefreshSetting = (s, _) => s.optionList.SetOptionTo(dels.GetModEnabled() ? 1 : 0),
+                                CancelAction = cancelAction
+                            },
+                            out var toggleModOption
+                        ).AddHorizontalOption(
                             "ShowTimerOption",
                             new HorizontalOptionConfig {
                                 Label = "Show Timer",
@@ -102,10 +120,10 @@ namespace HKTimer {
                                     }
                                 },
                                 RefreshSetting = (s, _) => s.optionList.SetOptionTo(settings.showTimer ? 1 : 0),
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                CancelAction = cancelAction,
                                 Style = HorizontalOptionStyle.VanillaStyle
                             },
-                            out showTimerOption
+                            out var showTimerOption
                         ).AddMenuButton(
                             "ResetBestButton",
                             new MenuButtonConfig {
@@ -113,7 +131,7 @@ namespace HKTimer {
                                 SubmitAction = _ => {
                                     if(HKTimer.instance != null) HKTimer.instance.triggerManager.ResetPB();
                                 },
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                CancelAction = cancelAction,
                                 Style = MenuButtonStyle.VanillaStyle
                             }
                         ).AddHorizontalOption(
@@ -121,7 +139,7 @@ namespace HKTimer {
                             new HorizontalOptionConfig {
                                 Label = "Trigger Type",
                                 Options = new string[] { "Collision", "Movement", "Scene" },
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                CancelAction = cancelAction,
                                 ApplySetting = (_, i) => {
                                     var trigger = i switch {
                                         0 => TriggerManager.TriggerPlaceType.Collision,
@@ -151,7 +169,7 @@ namespace HKTimer {
                                 SubmitAction = _ => {
                                     if(HKTimer.instance != null) HKTimer.instance.triggerManager.LoadTriggers();
                                 },
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                CancelAction = cancelAction,
                                 Style = MenuButtonStyle.VanillaStyle
                             }
                         ).AddMenuButton(
@@ -161,7 +179,7 @@ namespace HKTimer {
                                 SubmitAction = _ => {
                                     if(HKTimer.instance != null) HKTimer.instance.triggerManager.SaveTriggers();
                                 },
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                                CancelAction = cancelAction,
                                 Style = MenuButtonStyle.VanillaStyle
                             },
                             out var saveTriggersButton
@@ -179,7 +197,7 @@ namespace HKTimer {
                             settings.keybinds.pause,
                             new KeybindConfig {
                                 Label = "Pause",
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                CancelAction = cancelAction
                             },
                             out var pauseKeybind
                         ).AddKeybind(
@@ -187,14 +205,14 @@ namespace HKTimer {
                             settings.keybinds.reset,
                             new KeybindConfig {
                                 Label = "Reset",
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                CancelAction = cancelAction
                             }
                         ).AddKeybind(
                             "SetStartKeybind",
                             settings.keybinds.setStart,
                             new KeybindConfig {
                                 Label = "Set Start",
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                CancelAction = cancelAction
                             },
                             out setStartKeybind
                         ).AddKeybind(
@@ -202,12 +220,12 @@ namespace HKTimer {
                             settings.keybinds.setEnd,
                             new KeybindConfig {
                                 Label = "Set End",
-                                CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu)
+                                CancelAction = cancelAction
                             },
                             out setEndKeybind
                         );
                         navGraph.ChangeColumns(2);
-
+                        toggleModOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
                         showTimerOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
                         triggerTypeOption.GetComponent<MenuSetting>().RefreshValueFromGameSettings();
                     }
@@ -222,8 +240,8 @@ namespace HKTimer {
                         "BackButton",
                         new MenuButtonConfig {
                             Label = "Back",
-                            CancelAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
-                            SubmitAction = _ => UIManager.instance.UIGoToDynamicMenu(modListMenu),
+                            CancelAction = cancelAction,
+                            SubmitAction = cancelAction,
                             Style = MenuButtonStyle.VanillaStyle,
                             Proceed = true
                         },

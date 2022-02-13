@@ -21,7 +21,6 @@ namespace HKTimer {
                 GameObject.DestroyImmediate(timerCanvas);
             }
             timerCanvas = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, new Vector2(1920, 1080));
-            CanvasUtil.CreateFonts();
             frameDisplay = CanvasUtil.CreateTextPanel(
                 timerCanvas,
                 this.TimerText(),
@@ -92,19 +91,21 @@ namespace HKTimer {
         public event Action OnTimerReset;
 
         public void Awake() {
-            ModHooks.Instance.BeforeSceneLoadHook += this.OnSyncLoad;
+            On.GameManager.LoadScene += OnSyncLoad;
         }
 
-        private string OnSyncLoad(string name) {
-            if(this.state == TimerState.RUNNING) {
-                this.PauseTimer();
-                this.state = TimerState.IN_LOAD;
+        private void OnSyncLoad(On.GameManager.orig_LoadScene orig, GameManager self, string dest) {
+            if(this != null) {
+                if(this.state == TimerState.RUNNING) {
+                    this.PauseTimer();
+                    this.state = TimerState.IN_LOAD;
+                }
             }
-            return name;
+            orig(self, dest);
         }
 
         public void UnloadHooks() {
-            ModHooks.Instance.BeforeSceneLoadHook -= this.OnSyncLoad;
+            On.GameManager.LoadScene -= OnSyncLoad;
         }
 
         public void Update() {
@@ -199,7 +200,7 @@ namespace HKTimer {
                     && nextScene != sceneName
                 )
                 || (
-                    ModHooks.Instance.version.gameVersion.minor < 3 &&
+                    // ModHooks.Instance.version.gameVersion.minor < 3 && this is 1028, the minor version will be < 3
                     (bool) gameManagerDirtyTileMap.GetValue(GameManager.instance)
                 );
 

@@ -23,7 +23,7 @@ namespace HKTimer {
                     this.Destroy(tm);
                     Color color;
                     if(!ColorUtility.TryParseHtmlString(this.color, out color)) {
-                        Modding.Logger.LogError("Invalid color `" + color + "`.");
+                        HKTimer.instance.Log("Invalid color `" + color + "`.");
                         color = Color.black;
                     }
                     this.go = CreateTrigger(

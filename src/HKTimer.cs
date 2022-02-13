@@ -7,7 +7,7 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
 
 namespace HKTimer {
-    public class HKTimer : Mod, ITogglableMod {
+    public class HKTimer : Mod {
 
         public static Settings settings { get; private set; } = new Settings();
 
@@ -19,9 +19,7 @@ namespace HKTimer {
         // oh god oh fuck
         public UI.UIManager ui { get; private set; }
 
-        public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-        public override void Initialize() {
+        public HKTimer() : base("HKTimer") {
             if(instance != null) {
                 return;
             }
@@ -43,6 +41,7 @@ namespace HKTimer {
             this.ReloadSettings();
         }
 
+
         public void Unload() {
             this.timer.UnloadHooks();
             GameObject.Destroy(gameObject);
@@ -53,10 +52,10 @@ namespace HKTimer {
         public void ReloadSettings() {
             string path = Application.persistentDataPath + "/hktimer.json";
             if(!File.Exists(path)) {
-                Modding.Logger.Log("[HKTimer] Writing default settings to " + path);
+                Log("Writing default settings to " + path);
                 File.WriteAllText(path, JsonConvert.SerializeObject(settings, Formatting.Indented));
             } else {
-                Modding.Logger.Log("[HKTimer] Reading settings from " + path);
+                Log("Reading settings from " + path);
                 settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(path));
                 // just to add the default shit I guess
                 // might remove this when the format stabilizes

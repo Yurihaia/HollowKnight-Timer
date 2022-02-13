@@ -9,7 +9,7 @@
         <Copyright>Copyright © 2021</Copyright>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>latest</LangVersion>
-        <HollowKnightRefs>../../references/1221-modded/</HollowKnightRefs>
+        <HollowKnightRefs>../../references/1028-modded/</HollowKnightRefs>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp">

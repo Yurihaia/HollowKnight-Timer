@@ -45,7 +45,6 @@ namespace HKTimer.UI {
             if(menu != null) {
                 GameObject.DestroyImmediate(menu);
             }
-            CanvasUtil.CreateFonts();
             menu = CanvasUtil.CreateCanvas(UnityEngine.RenderMode.ScreenSpaceOverlay, 100);
             this.showTimer = new UIOption<ToggleOption>(
                 CanvasUtil.CreateTextPanel(

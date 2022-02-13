@@ -3,7 +3,7 @@
         <ProjectGuid>{E3E4D0B7-656C-6C50-7567-696E2E57696E}</ProjectGuid>
         <TargetFramework>net472</TargetFramework>
         <AssemblyTitle>HKTimer</AssemblyTitle>
-        <AssemblyVersion>0.0.6</AssemblyVersion>
+        <AssemblyVersion>0.1.0</AssemblyVersion>
         <Product>HKTimer</Product>
         <DebugType>portable</DebugType>
         <Copyright>Copyright © 2021</Copyright>

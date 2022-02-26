@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using HKTimer.Triggers;
 using System.Text;
 using System.Collections;
+using System.Diagnostics;
 
 namespace HKTimer {
     public class TriggerManager : MonoBehaviour {
@@ -206,9 +207,16 @@ namespace HKTimer {
         }
 
         public void SpawnTriggers() {
-            this.start?.Spawn(this);
+            //
+           // HKTimer.instance.Log("SpawnTrigges");
+           // HKTimer.instance.Log((new StackFrame(1).GetMethod().Name));
+           // HKTimer.instance.Log("");
+
             this.end?.Spawn(this);
+            this.start?.Spawn(this);
             this.triggers?.ForEach(x => x.Spawn(this));
+
+
         }
 
         public void Awake() {
@@ -253,6 +261,8 @@ namespace HKTimer {
             LoadTriggers();
         }
         public void Update() {
+
+
             if(StringInputManager.GetKeyDown(HKTimer.settings.set_start)) {
                 this.start?.Destroy(this);
                 switch(this.triggerPlaceType) {

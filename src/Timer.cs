@@ -126,7 +126,10 @@ namespace HKTimer {
                 frameDisplay.text = this.TimerText();
             }
         }
-
+        public void FixedUpdate()
+        {
+            frameDisplay.text = this.TimerText();
+        }
         // This uses the same disgusting logic as the autosplitter
         private bool lookForTeleporting;
         private GameState lastGameState = GameState.INACTIVE;

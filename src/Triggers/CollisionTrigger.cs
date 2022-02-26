@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using UnityEngine;
-
+using System.Diagnostics;
 namespace HKTimer {
     namespace Triggers {
         public class CollisionTrigger : Trigger {
@@ -19,7 +19,11 @@ namespace HKTimer {
             public override string Name => name;
 
             public override void Spawn(TriggerManager tm) {
+
                 if(this.scene == GameManager.instance.sceneName) {
+                   // HKTimer.instance.Log((new StackFrame(1).GetMethod().Name));
+                   // HKTimer.instance.Log(this.color + "  " + this.scene);
+
                     this.Destroy(tm);
                     Color color;
                     if(!ColorUtility.TryParseHtmlString(this.color, out color)) {

@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
+using System.Collections;
 
 namespace HKTimer {
     public class HKTimer : Mod {
@@ -25,22 +26,29 @@ namespace HKTimer {
             }
             instance = this;
             gameObject = new GameObject();
-
             timer = gameObject.AddComponent<Timer>();
-            timer.InitDisplay();
 
             triggerManager = gameObject.AddComponent<TriggerManager>().Initialize(timer);
-            triggerManager.InitDisplay();
 
             ui = gameObject.AddComponent<UI.UIManager>().Initialize(triggerManager, this, timer);
-            ui.InitDisplay();
 
             USceneManager.activeSceneChanged += SceneChanged;
             Object.DontDestroyOnLoad(gameObject);
-
+            On.GameManager.Start += GameManager_Start;
             this.ReloadSettings();
+
         }
 
+        private void GameManager_Start(On.GameManager.orig_Start orig, GameManager self)
+        {
+            timer.InitDisplay();
+            triggerManager.InitDisplay();
+            ui.gm = self;
+            ui.InitDisplay();
+
+
+            orig(self);
+        }
 
         public void Unload() {
             this.timer.UnloadHooks();
@@ -68,7 +76,15 @@ namespace HKTimer {
         }
 
         private void SceneChanged(Scene from, Scene to) {
+
+            GameManager.instance.StartCoroutine(Triggers(from,to));
+        }
+
+        private IEnumerator Triggers(Scene from, Scene to)
+        {
+            yield return new WaitWhile(() => !to.isLoaded);
             triggerManager.SpawnTriggers();
         }
+
     }
 }

@@ -37,7 +37,7 @@ namespace HKTimer.UI {
             this.tm = tm;
             this.hktimer = hktimer;
             this.timer = timer;
-            this.gm = GameManager.instance;
+            //gm = GameManager.instance;
             return this;
         }
 
@@ -149,6 +149,7 @@ namespace HKTimer.UI {
         public void SetShown(bool show) {
             foreach(var e in this.elements) {
                 e.SetShown(show);
+                hktimer.Log(e.ToString() +": " + show);
             }
             this.cursorDisplay.SetActive(show);
             if(show) GameObject.DontDestroyOnLoad(this.cursorDisplay);

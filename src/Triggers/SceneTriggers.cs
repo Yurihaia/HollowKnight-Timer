@@ -12,6 +12,7 @@ namespace HKTimer {
 
             // Takes advantage of the fact that `Spawn` is called on scene transition
             public override void Spawn(TriggerManager tm) {
+                
                 if(this.scene == GameManager.instance.sceneName) {
                     tm.ExecLogic(this.logic);
                 }

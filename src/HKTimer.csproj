@@ -9,24 +9,35 @@
         <Copyright>Copyright © 2021</Copyright>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>latest</LangVersion>
-        <HollowKnightRefs>../../references/1028-modded/</HollowKnightRefs>
+        <HollowKnightRefs>C:\Program Files (x86)\Steam\steamapps\content\app_367520\depot_367521\1028\hollow_knight_Data\Managed</HollowKnightRefs>
     </PropertyGroup>
+
+	<Target Name="CopyMod" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ExportDir)/" />
+		<GetFileHash Files="$(ExportDir)/$(TargetName)/$(TargetName).zip" Algorithm="SHA256">
+			<Output TaskParameter="Items" ItemName="FilesWithHashes" />
+		</GetFileHash>
+		<WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="@(FilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
+	</Target>
+	
+	
+	
     <ItemGroup>
         <Reference Include="Assembly-CSharp">
-            <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\content\app_367520\depot_367521\1028\hollow_knight_Data\Managed\Assembly-CSharp.dll</HintPath>
         </Reference>
-        <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(HollowKnightRefs)/UnityEngine.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(HollowKnightRefs)/UnityEngine.UI.dll</HintPath>
-        </Reference>
-        <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
+        <Reference Include="PlayMaker">
+          <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\content\app_367520\depot_367521\1028\hollow_knight_Data\Managed\PlayMaker.dll</HintPath>
         </Reference>
         <Reference Include="System.Core" />
         <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>../JsonNet/Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine">
+          <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\content\app_367520\depot_367521\1028\hollow_knight_Data\Managed\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+          <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\content\app_367520\depot_367521\1028\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
         </Reference>
     </ItemGroup>
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">

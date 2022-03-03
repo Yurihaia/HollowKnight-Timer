@@ -2,9 +2,17 @@
 Hollow Knight in-game timer mod
 
 ## Installation
-To install the mod, grab the release ZIP from [the latest release](https://github.com/Yurihaia/HollowKnight-Timer/releases).
+To install the mod, grab the release ZIP from [the latest 1.2.2.1 release](https://github.com/Yurihaia/HollowKnight-Timer/releases/tag/v0.1.0).
 Extract all 3 `.dll` files into the `Mods` folder in your Hollow Knight installation.  
 The modding API will say that `System.Runtime.Serialization.dll` failed to load but this is completely normal
+
+### Installation for 1.5.xx
+For current patches of the game, the timer is available from the "Scarab" mod manager
+
+### Installation for 1.0.2.8
+Like the 1.2.2.1 release, take the ZIP from [the latest 1.0.2.8 version](https://github.com/Yurihaia/HollowKnight-Timer/releases/tag/v0.1.0-1.0.2.8).
+Then follow the same steps for the [1.2.2.1 installation](#installation)
+
 
 ## Settings
 The keybinds and various other settings can be edited in the `hktimer.json` in the same directory as your save files. They follow the unity keybind naming system.  

@@ -43,7 +43,6 @@ namespace HKTimer.UI {
 
         public void InitDisplay() {
             if(menu != null) {
-                Modding.Logger.Log("Destroy menu");
                 GameObject.DestroyImmediate(menu);
             }
             CanvasUtil.CreateFonts();

@@ -162,7 +162,7 @@ namespace HKTimer.UI {
         }
 
         public void Update() {
-            if (StringInputManager.GetKeyDown(HKTimer.settings.open_ui)) {
+            if(StringInputManager.GetKeyDown(HKTimer.settings.open_ui)) {
                 if(this.uiOpen) {
                     this.uiOpen = false;
                     this.SetShown(false);

@@ -14,7 +14,6 @@ namespace HKTimer.UI {
         public TriggerManager tm { get; set; }
         public HKTimer hktimer { get; set; }
         public Timer timer { get; set; }
-        public GameManager gm { get; set; }
 
         private static readonly Vector2 MIDDLE = new Vector2(0.5f, 0.5f);
 
@@ -37,7 +36,6 @@ namespace HKTimer.UI {
             this.tm = tm;
             this.hktimer = hktimer;
             this.timer = timer;
-            this.gm = GameManager.instance;
             return this;
         }
 
@@ -165,16 +163,16 @@ namespace HKTimer.UI {
                 if(this.uiOpen) {
                     this.uiOpen = false;
                     this.SetShown(false);
-                    if(this.gm.hero_ctrl != null) this.gm.hero_ctrl.RegainControl();
+                    if(GameManager.instance.hero_ctrl != null) GameManager.instance.hero_ctrl.RegainControl();
                 } else {
                     this.uiOpen = true;
                     this.SetShown(true);
                     this.cursor = 0;
                     this.UpdateCursor();
-                    if(this.gm.hero_ctrl != null) this.gm.hero_ctrl.RelinquishControl();
+                    if(GameManager.instance.hero_ctrl != null) GameManager.instance.hero_ctrl.RelinquishControl();
                 }
             } else if(this.uiOpen) {
-                var inputHandler = this.gm.inputHandler;
+                var inputHandler = GameManager.instance.inputHandler;
                 if(inputHandler.inputActions.left.WasPressed) {
                     this.elements[this.cursor].Left();
                 } else if(inputHandler.inputActions.right.WasPressed) {

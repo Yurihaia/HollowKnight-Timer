@@ -14,7 +14,6 @@ namespace HKTimer.UI {
         public TriggerManager tm { get; set; }
         public HKTimer hktimer { get; set; }
         public Timer timer { get; set; }
-        public GameManager gm { get; set; }
 
         private static readonly Vector2 MIDDLE = new Vector2(0.5f, 0.5f);
 
@@ -37,7 +36,6 @@ namespace HKTimer.UI {
             this.tm = tm;
             this.hktimer = hktimer;
             this.timer = timer;
-            this.gm = GameManager.instance;
             return this;
         }
 
